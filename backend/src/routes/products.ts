@@ -45,11 +45,11 @@ router.post('/', async (req, res) => {
                 description,
                 sku,
                 url,
-                slug: await generateSlug(title),
+                slug: generateSlug(title),
                 categories: {
                     connectOrCreate: [
-                        { where: { name: categories[0] }, create: { name: categories[0] } },
-                        { where: { name: categories[1] }, create: { name: categories[1] } },
+                        { where: { name: categories[0] }, create: { name: categories[0], slug: generateSlug(categories[0]) } },
+                        { where: { name: categories[1] }, create: { name: categories[1], slug: generateSlug(categories[1]) } },
                     ]
                 }
             }
