@@ -6,9 +6,13 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "ts-node src/index.ts",
     "migration:create": "prisma migrate dev --create-only",
-    "migrate": "prisma migrate dev",
+    "migrate": "prisma migrate dev --skip-seed",
     "migration:prod": "prisma migrate deploy",
-    "seed": "ts-node src/seed/index.ts"
+    "reset:seed": "prisma migrate reset",
+    "reset": "prisma migrate reset --skip-seed"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   },
   "keywords": [],
   "author": "",

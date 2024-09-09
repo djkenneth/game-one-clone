@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { getProducts } from '@/apis/products'
 import { Product } from '@/types'
-import { Card, CardImage, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardImage, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 import { FaStar } from "react-icons/fa6";
 import { HiOutlineShoppingBag } from "react-icons/hi2";
