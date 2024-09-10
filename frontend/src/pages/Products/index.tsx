@@ -1,15 +1,35 @@
+import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getProducts } from '@/apis/products'
-import { Product } from '@/types'
-import { Card, CardImage, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-import { FaStar } from "react-icons/fa6";
-import { HiOutlineShoppingBag } from "react-icons/hi2";
 import { formatNumberToCurrency } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+
+import { useDebounce } from "@uidotdev/usehooks";
+
+// Custom Components
+import { CardGridCol } from './CardGridCol'
+import { Slider } from '@/components/ui/slider'
+
 
 export const Products = () => {
     const { isLoading, error, data: products } = useQuery({ queryKey: ['products'], queryFn: getProducts })
+
+    const [range, setRange] = useState([1000, 10000]);
+    const [trigger, setTrigger] = useState(false);
+    const debouncedSearchTerm = useDebounce(range, 1000);
+
+    const handleRangeChange = (value: number[]) => {
+        setRange(value);
+        setTrigger(true);
+    };
+
+    useEffect(() => {
+        if (trigger) {
+            if (debouncedSearchTerm) {
+                console.log('debouncedSearchTerm', debouncedSearchTerm);
+            }
+        }
+    }, [debouncedSearchTerm])
 
     if (isLoading) return 'Loading...'
     if (error) return `An error has accurred ${error.message}`
@@ -17,38 +37,29 @@ export const Products = () => {
     return (
         <div className="container max-w-7xl mx-auto 2xl:max-w-[90%]">
             <div className="flex gap-2">
-                <div className="w-[25%] bg-red-400">
-                    <h1>aslidjashd</h1>
-                </div>
-                <div className="w-[75%] grid gap-3 grid-cols-1 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5">
-                    {products.map((product: Product) => (
-                        <Card className="group shadow-inner hover:shadow-lg">
-                            <div className='overflow-hidden'>
-                                <CardImage src={product.image} className="" />
+                <div className="w-[25%]">
+                    <div className="grid grid-cols-1 divide-y pl-10">
+                        <div className="space-y-3 py-3">
+                            <h3 className="text-lg font-bold uppercase font-mono">Price</h3>
+                            <div className="px-4">
+                                <Slider
+                                    defaultValue={[1000, 10000]}
+                                    min={1000}
+                                    max={10000}
+                                    step={1}
+                                    value={range}
+                                    onValueChange={handleRangeChange}
+                                    formatLabel={(value) => `${formatNumberToCurrency(value)}`}
+                                    minStepsBetweenThumbs={0} />
                             </div>
-                            <CardHeader className="p-2 pt-0">
-                                <CardTitle className="line-clamp-2">{product.title}</CardTitle>
-                            </CardHeader>
-                            <CardContent className="flex flex-col gap-3">
-                                <div className="flex justify-center gap-1">
-                                    <FaStar className="text-yellow-400 text-xs" />
-                                    <FaStar className="text-yellow-400 text-xs" />
-                                    <FaStar className="text-yellow-400 text-xs" />
-                                    <FaStar className="text-yellow-400 text-xs" />
-                                </div>
-                                <p className="text-center font-medium">{formatNumberToCurrency(product.price)}</p>
-                                <Button variant="destructive" size="sm">
-                                    <HiOutlineShoppingBag className="mr-2 h-4 w-4" /> ADD TO CART
-                                </Button>
-                            </CardContent>
-                            {/* <CardFooter>
-                                    <p>Card Footer</p>
-                                </CardFooter> */}
-                        </Card>
-                    ))}
+                        </div>
+                        <div>02</div>
+                    </div>
+                </div>
+                <div className="w-[75%]">
+                    <CardGridCol products={products} />
                 </div>
             </div>
-
         </div>
     )
 }
