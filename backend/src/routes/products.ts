@@ -5,9 +5,11 @@ import { generateSlug } from '../lib/index'
 const router = Router();
 const prisma = new PrismaClient();
 
-router.get('/', async (req, res) => {
+router.post('/', async (req, res) => {
+    const payload = req.body;
     try {
         const products = await prisma.product.findMany({
+            ...payload,
             include: { categories: true }
         });
         res.json(products);
