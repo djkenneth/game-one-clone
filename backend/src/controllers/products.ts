@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import prisma from '../prismaClient';
+import { prisma } from '../index'
 import { generateSlug } from '../lib/index'
 
 // Fetch All Products

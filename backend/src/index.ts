@@ -1,17 +1,20 @@
 import express, { Express } from 'express';
+import { PrismaClient } from '@prisma/client';
 import cors from 'cors';
-import bodyparser from 'body-parser'
-import helmet from 'helmet'
+// import bodyparser from 'body-parser'
+// import helmet from 'helmet'
 import { PORT } from './secret'
 
 import rootRouter from './routes';
+import { errorMiddleware } from './middlewares/errors';
+import { signUpSchema } from './schema/users';
 
 const app: Express = express();
 
 // Basic Express middleware for security.
-app.use(helmet())
+// app.use(helmet())
 // Middleware to parse request bodies.
-app.use(bodyparser.json())
+// app.use(bodyparser.json())
 
 app.use(cors({
     origin: 'http://localhost:5173', // Replace with your frontend URL
@@ -20,6 +23,12 @@ app.use(express.json());
 
 // Use the routes
 app.use('/api', rootRouter)
+
+export const prisma = new PrismaClient({
+    log: ['query']
+});
+
+app.use(errorMiddleware)
 
 const port = PORT;
 app.listen(port, () => {
