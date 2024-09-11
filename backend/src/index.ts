@@ -1,13 +1,12 @@
-import express from 'express';
+import express, { Express } from 'express';
 import cors from 'cors';
 import bodyparser from 'body-parser'
 import helmet from 'helmet'
+import { PORT } from './secret'
 
-// import userRoutes from './routes/users';
-// import articleRoutes from './routes/articles';
-import productRoutes from './routes/products';
+import rootRouter from './routes';
 
-const app = express();
+const app: Express = express();
 
 // Basic Express middleware for security.
 app.use(helmet())
@@ -20,11 +19,9 @@ app.use(cors({
 app.use(express.json());
 
 // Use the routes
-// app.use('/users', userRoutes);
-// app.use('/articles', articleRoutes);
-app.use('/products', productRoutes);
+app.use('/api', rootRouter)
 
-const port = 3001;
+const port = PORT;
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });
