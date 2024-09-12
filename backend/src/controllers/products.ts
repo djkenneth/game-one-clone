@@ -1,84 +1,86 @@
 import { Request, Response } from 'express';
 import { prisma } from '../index'
 import { generateSlug } from '../lib/index'
+import { createProductSchema } from '../schema/products';
+import { NotFoundException } from '../exceptions/not-found';
+import { ErrorCode } from '../exceptions/root';
 
 // Fetch All Products
 export const getAllProduct = async (req: Request, res: Response) => {
-    const payload = req.body;
-    try {
-        const products = await prisma.product.findMany({
-            ...payload,
-            include: { categories: true }
-        });
-        res.json(products);
-    } catch (error) {
-        console.log(error)
-        res.status(500).json({ error: 'something went wrong :(' })
-    }
+    const count = await prisma.product.count()
+    const products = await prisma.product.findMany({
+        include: { categories: true },
+        skip: parseInt(req.query.skip as string) || 0,
+        take: parseInt(req.query.take as string) || 5,
+        // where: {
+        //     AND: [
+        //         { price: { gte: 500 } },
+        //         { price: { lte: 1000 } }
+        //     ]
+        // }
+    });
+    res.json({
+        count,
+        products
+    });
 }
 
 // Get Single Product
-export const getOneProduct = async (req: Request, res: Response) => {
+export const getProductById = async (req: Request, res: Response) => {
     try {
         const id = req.params.id;
-        const product = await prisma.product.findFirst({
+        const product = await prisma.product.findFirstOrThrow({
             include: { categories: true },
             where: {
-                id: parseInt(id)
+                id: +id
             }
         })
         res.json(product)
     } catch (error) {
-        console.log(error)
-        res.status(500).json({ error: 'something went wrong :(' })
+        throw new NotFoundException('Product not found', ErrorCode.PRODUCT_NOT_FOUND)
     }
 }
 
 // Create Product Route
 export const createProduct = async (req: Request, res: Response) => {
-    try {
-        const { title, price, availability, image, description, sku, url, categories } = req.body;
-        await prisma.product.create({
-            data: {
-                title,
-                price,
-                availability,
-                image,
-                description,
-                sku,
-                url,
-                slug: generateSlug(title),
-                categories: {
-                    connectOrCreate: [
-                        { where: { name: categories[0] }, create: { name: categories[0], slug: generateSlug(categories[0]) } },
-                        { where: { name: categories[1] }, create: { name: categories[1], slug: generateSlug(categories[1]) } },
-                    ]
-                }
-            }
-        })
 
-        res.send({ message: "Successfully Created", status: 201 })
-    } catch (error) {
-        console.log(error)
-        res.status(500).json({ error: 'something went wrong :(' })
-    }
+    createProductSchema.parse(req.body)
+    const { title, tags, categories } = req.body;
+
+    const product = await prisma.product.create({
+        data: {
+            ...req.body,
+            tags: tags.join(','),
+            slug: generateSlug(title),
+            categories: {
+                connectOrCreate: [
+                    { where: { name: categories[0] }, create: { name: categories[0], slug: generateSlug(categories[0]) } },
+                    { where: { name: categories[1] }, create: { name: categories[1], slug: generateSlug(categories[1]) } },
+                ]
+            }
+        }
+    })
+
+    res.send(product)
 }
 
 // Update Product
 export const updateProduct = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const data = req.body;
-        await prisma.product.update({
+        const product = req.body;
+        if (product.tags) {
+            product.tags = product.tags.join(',')
+        }
+        const updateProduct = await prisma.product.update({
             where: {
                 id: parseInt(id)
             },
-            data: data
+            data: product
         })
-        res.send({ message: "Successfully Updated", status: 200 })
+        res.send(updateProduct)
     } catch (error) {
-        console.log(error)
-        res.status(500).json({ error: 'something went wrong :(' })
+        throw new NotFoundException('Product not found', ErrorCode.PRODUCT_NOT_FOUND)
     }
 }
 
@@ -86,14 +88,13 @@ export const updateProduct = async (req: Request, res: Response) => {
 export const deleteProduct = async (req: Request, res: Response) => {
     try {
         const id = req.params.id;
-        await prisma.product.delete({
+        const deleteProduct = await prisma.product.delete({
             where: {
                 id: parseInt(id)
             }
         })
-        res.send({ message: "Successfully Deleted", status: 200 })
+        res.send(deleteProduct)
     } catch (error) {
-        console.log(error)
-        res.status(500).json({ error: 'something went wrong :(' })
+        throw new NotFoundException('Product not found', ErrorCode.PRODUCT_NOT_FOUND)
     }
 }

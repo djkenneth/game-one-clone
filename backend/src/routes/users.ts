@@ -1,23 +1,15 @@
 import { Router } from 'express';
-import { prisma } from '../index'
+import { errorHandler } from '../error-handler';
+import { createAddress, createProfile, deleteAddress, getProfile, listAddress, updateProfile } from '../controllers/users';
+import authMiddleware from '../middlewares/auth';
 
-const router = Router();
+const userRouter = Router();
+userRouter.post('/address', [authMiddleware], errorHandler(createAddress));
+userRouter.delete('/address/:id', [authMiddleware], errorHandler(deleteAddress));
+userRouter.get('/address', [authMiddleware], errorHandler(listAddress));
 
-// Get all users
-router.get('/', async (req, res) => {
-    const users = await prisma.user.findMany({
-        include: { articles: true },
-    });
-    res.json(users);
-});
+userRouter.post('/profile', [authMiddleware], errorHandler(createProfile));
+userRouter.get('/profile', [authMiddleware], errorHandler(getProfile));
+userRouter.put('/address/:id', [authMiddleware], errorHandler(updateProfile));
 
-// Create a new user
-router.post('/', async (req, res) => {
-    const { email, name } = req.body;
-    const user = await prisma.user.create({
-        data: { email, name },
-    });
-    res.json(user);
-});
-
-export default router;
+export default userRouter;

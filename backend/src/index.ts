@@ -7,7 +7,6 @@ import { PORT } from './secret'
 
 import rootRouter from './routes';
 import { errorMiddleware } from './middlewares/errors';
-import { signUpSchema } from './schema/users';
 
 const app: Express = express();
 

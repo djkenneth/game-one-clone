@@ -6,14 +6,14 @@ import { JWT_SECRET } from '../secret';
 import { BadRequestException } from '../exceptions/bad-request';
 import { ErrorCode } from '../exceptions/root';
 import { UnprocessableEntity } from '../exceptions/validation';
-import { signUpSchema } from '../schema/users';
+import { SignUpSchema } from '../schema/users';
 import { NotFoundException } from '../exceptions/not-found';
 
 const saltRounds = 10;
 
 // Signup User
 export const signup = async (req: Request, res: Response, next: NextFunction) => {
-    signUpSchema.parse(req.body)
+    SignUpSchema.parse(req.body)
     const { email, password, name } = req.body
 
     let user = await prisma.user.findFirst({ where: { email } })
