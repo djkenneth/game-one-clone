@@ -7,6 +7,7 @@ import { BadRequestException } from '../exceptions/bad-request';
 import { ErrorCode } from '../exceptions/root';
 import { UnprocessableEntity } from '../exceptions/validation';
 import { signUpSchema } from '../schema/users';
+import { NotFoundException } from '../exceptions/not-found';
 
 const saltRounds = 10;
 
@@ -38,15 +39,17 @@ export const login = async (req: Request, res: Response) => {
 
     let user = await prisma.user.findFirst({ where: { email } })
 
-    if (!user) {
-        throw Error('User does noe exists!');
-    }
-
-    if (!compareSync(password, user.password)) throw Error('User does noe exists!');
+    if (!user) throw new NotFoundException('User not found', ErrorCode.USER_NOT_FOUND)
+    if (!compareSync(password, user.password)) throw new BadRequestException('Incorrect password', ErrorCode.INCORRECT_PASSWORD);
 
     const token = jwt.sign({
         userId: user.id
     }, JWT_SECRET)
 
-    res.json({ user, token })
+    res.json({ token })
+}
+
+// Profile
+export const me = (req: Request, res: Response) => {
+    res.json(req.user)
 }
