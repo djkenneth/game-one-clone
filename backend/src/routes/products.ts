@@ -8,7 +8,6 @@ import adminMiddleware from '../middlewares/admin';
 const productRouter = Router();
 
 // Fetch All Products Route
-// Todo: Need to fix this endpoint 
 productRouter.get('/', errorHandler(getAllProduct))
 // Get Single Product Route
 productRouter.get('/:id', errorHandler(getProductById))
