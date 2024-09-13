@@ -14,6 +14,12 @@ export const AddressSchema = z.object({
     pincode: z.string().min(4).max(6),
 })
 
+export const UpdateUserSchema = z.object({
+    name: z.string().optional(),
+    defaultShippingAddress: z.number().optional(),
+    defaultBillingAddress: z.number().optional()
+})
+
 export const ProfileSchema = z.object({
     firstName: z.string(),
     middleName: z.string().nullable(),
