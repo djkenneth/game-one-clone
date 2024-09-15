@@ -6,8 +6,10 @@ import { JWT_SECRET } from "../secret";
 import { prisma } from "..";
 
 const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-    // 1 - extract the token from header
-    const token = req.headers.authorization;
+    // 1 - extract the token from the Authorization header
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1]; // Assuming "Bearer <token>"
+
     // 2 - if token is not present, throw an error of unauthorized
     if (!token) next(new UnauthorizedException('Unauthorized', ErrorCode.UNAUTHORIZED))
 
