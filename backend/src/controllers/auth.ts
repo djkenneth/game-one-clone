@@ -10,14 +10,12 @@ import { NotFoundException } from '../exceptions/not-found';
 import { UnauthorizedException } from '../exceptions/unauthorized';
 
 const saltRounds = 10;
-const accessTokenExpiry = '30m'; // Access token expires in 15 minutes
+const accessTokenExpiry = '1d'; // Access token expires in 1 day
 const refreshTokenExpiry = '7d'; // Refresh token expires in 7 days
 
 // Function to generate tokens
 const generateTokens = (userId: number) => {
-    const accessToken = jwt.sign({ userId }, JWT_SECRET, { expiresIn: accessTokenExpiry });
-    const refreshToken = jwt.sign({ userId }, JWT_REFRESH_SECRET, { expiresIn: refreshTokenExpiry });
-    return { accessToken, refreshToken };
+    return jwt.sign({ userId }, JWT_SECRET, { expiresIn: accessTokenExpiry });
 };
 
 // Signup User
@@ -39,9 +37,7 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
         }
     })
 
-    const { accessToken, refreshToken } = generateTokens(user.id);
-
-    res.json({ user, accessToken, refreshToken });
+    res.json({ user });
 }
 
 // Login User
@@ -55,7 +51,8 @@ export const login = async (req: Request, res: Response) => {
         throw new BadRequestException('Incorrect password', ErrorCode.INCORRECT_PASSWORD);
     }
 
-    const { accessToken, refreshToken } = generateTokens(user.id);
+    const accessToken = generateTokens(user.id);
+    const refreshToken = jwt.sign({ userId: user.id }, JWT_REFRESH_SECRET, { expiresIn: refreshTokenExpiry });
 
     res.json({ accessToken, refreshToken });
 }
@@ -69,9 +66,9 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
 
     try {
         const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as { userId: string };
-        const { accessToken, refreshToken: newRefreshToken } = generateTokens(parseInt(decoded.userId));
+        const accessToken = generateTokens(parseInt(decoded.userId));
 
-        res.json({ accessToken, refreshToken: newRefreshToken });
+        res.json({ accessToken });
     } catch (error) {
         return next(new UnauthorizedException('Invalid refresh token', ErrorCode.INVALID_REFRESH_TOKEN));
     }
