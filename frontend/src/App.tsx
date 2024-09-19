@@ -1,8 +1,3 @@
-// import reactLogo from './assets/react.svg'
-// import viteLogo from '/vite.svg'
-// import './App.css'
-// import useFetch from './hooks/useFetch';
-
 import { Route, Routes } from "react-router-dom";
 import {
   QueryClient,
@@ -10,26 +5,47 @@ import {
 } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import Layout from "@/Layout";
-import { Home } from "@/pages/Home";
-import { Products } from "@/pages/Products";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import LoginPage from "@/pages/Login";
+import SignupPage from "@/pages/Signup";
+import DashboardPage from "@/pages/Dashboard";
+import HomePage from "@/pages/Home";
+import ProductPage from "@/pages/Products";
+import AuthProvider from "@/components/AuthProvider";
+import PublicRoute from "@/components/PublicRoute";
 
 // Create a client
 const queryClient = new QueryClient()
 
 function App() {
   return (
-    <div className="app">
+    <AuthProvider>
       <QueryClientProvider client={queryClient}>
+
         <Layout>
           <Routes>
-            <Route path='/' element={<Home />} />
-            <Route path='/products' element={<Products />} />
+            <Route path='/' element={<HomePage />} />
+            <Route path='/products' element={<ProductPage />} />
+            <Route path='/login' element={
+              <PublicRoute>
+                <LoginPage />
+              </PublicRoute>
+            } />
+            <Route path='/signup' element={
+              <PublicRoute>
+                <SignupPage />
+              </PublicRoute>
+            } />
+            <Route path='/dashboard' element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            } />
           </Routes>
         </Layout>
-        {/* The rest of your application */}
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
-    </div>
+    </AuthProvider>
   );
 }
 

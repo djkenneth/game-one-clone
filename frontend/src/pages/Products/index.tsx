@@ -11,7 +11,7 @@ import { CardGridCol } from './CardGridCol'
 import { Slider } from '@/components/ui/slider'
 
 
-export const Products = () => {
+const Products = () => {
     const { isLoading, error, data: products } = useQuery({ queryKey: ['products'], queryFn: getProducts })
 
     const [range, setRange] = useState([1000, 10000]);
@@ -63,3 +63,5 @@ export const Products = () => {
         </div>
     )
 }
+
+export default Products;
