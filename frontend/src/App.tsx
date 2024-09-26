@@ -1,37 +1,29 @@
 import { Route, Routes } from "react-router-dom";
-import {
-  QueryClient,
-  QueryClientProvider,
-} from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import Layout from "@/Layout";
+import { AuthProvider } from "@/context/AuthContext";
+import { ProductsProvider } from "./context/ProductsContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import PublicRoute from "@/components/PublicRoute";
+import Layout from "@/Layout";
 import LoginPage from "@/pages/Login";
 import SignupPage from "@/pages/Signup";
 import DashboardPage from "@/pages/Dashboard";
 import HomePage from "@/pages/Home";
 import ProductPage from "@/pages/Products";
-import AuthProvider from "@/components/AuthProvider";
-import PublicRoute from "@/components/PublicRoute";
-
-// Create a client
-const queryClient = new QueryClient()
 
 function App() {
   return (
     <AuthProvider>
-      <QueryClientProvider client={queryClient}>
-
+      <ProductsProvider>
         <Layout>
           <Routes>
             <Route path='/' element={<HomePage />} />
             <Route path='/products' element={<ProductPage />} />
-            <Route path='/login' element={
+            <Route path='/customer/account/login' element={
               <PublicRoute>
                 <LoginPage />
               </PublicRoute>
             } />
-            <Route path='/signup' element={
+            <Route path='/customer/account/create' element={
               <PublicRoute>
                 <SignupPage />
               </PublicRoute>
@@ -43,8 +35,7 @@ function App() {
             } />
           </Routes>
         </Layout>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
+      </ProductsProvider>
     </AuthProvider>
   );
 }

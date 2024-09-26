@@ -12,12 +12,13 @@ const Home = () => {
     return (
         <div>
             <Carousel
+                className="relative"
                 opts={{
                     loop: true
                 }}
                 plugins={[
                     Autoplay({
-                        delay: 2000,
+                        delay: 10000,
                     }),
                 ]}
             >
@@ -41,8 +42,8 @@ const Home = () => {
                         <img src="homeslider/slider-6.jpg" className="object-cover w-full min-h-32" />
                     </CarouselItem>
                 </CarouselContent>
-                <CarouselPrevious />
-                <CarouselNext />
+                <CarouselPrevious className="absolute top-1/2 left-6" />
+                <CarouselNext className="absolute top-1/2 right-6" />
             </Carousel>
         </div>
     )

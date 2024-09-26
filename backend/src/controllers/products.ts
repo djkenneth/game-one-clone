@@ -1,28 +1,50 @@
 import { Request, Response } from 'express';
+import qs from 'qs';
 import { prisma } from '../index'
 import { generateSlug } from '../lib/index'
 import { createProductSchema } from '../schema/products';
 import { NotFoundException } from '../exceptions/not-found';
 import { ErrorCode } from '../exceptions/root';
 
+const convertValuesToNumbers = (obj: any): any => {
+    for (const key in obj) {
+        if (typeof obj[key] === 'object' && obj[key] !== null) {
+            convertValuesToNumbers(obj[key]);
+        } else if (!isNaN(obj[key])) {
+            obj[key] = Number(obj[key]);
+        }
+    }
+    return obj;
+};
+
 // Fetch All Products
 export const getAllProduct = async (req: Request, res: Response) => {
-    const count = await prisma.product.count()
-    const products = await prisma.product.findMany({
-        include: { categories: true },
-        skip: parseInt(req.query.skip as string) || 0,
-        take: parseInt(req.query.take as string) || 5,
-        // where: {
-        //     AND: [
-        //         { price: { gte: 500 } },
-        //         { price: { lte: 1000 } }
-        //     ]
-        // }
-    });
-    res.json({
-        count,
-        products
-    });
+    const { skip, take, ...filters } = req.query;
+
+    // Parse query parameters into the correct format (this handles nested AND conditions)
+    const parsedFilters = qs.parse(filters as any);
+
+    // Convert string values to numbers where appropriate
+    const convertedFilters = convertValuesToNumbers(parsedFilters);
+
+    try {
+        const count = await prisma.product.count()
+
+        const products = await prisma.product.findMany({
+            include: { categories: true },
+            skip: parseInt(skip as string) || 0,
+            take: parseInt(take as string) || 5,
+            where: convertedFilters, // Apply dynamic filters
+        });
+
+        res.json({
+            count,
+            products
+        });
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        res.status(500).json({ error: 'An error occurred while fetching products.' });
+    }
 }
 
 // Get Single Product

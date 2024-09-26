@@ -14,7 +14,8 @@ export type Product = {
     description: string
     sku: string
     url: string
-    createdAt: string
-    updatedAt: string
+    createdAt: Date
+    updatedAt: Date
     categories: Category[]
+    tags: string;
 }

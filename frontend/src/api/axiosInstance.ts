@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { generateRefreshToken } from '../apis/auth'
+import { generateRefreshToken } from './auth'
 
 const axiosInstance = axios.create({
     baseURL: import.meta.env.VITE_BASE_URL, // Replace with your API base URL
@@ -38,6 +38,8 @@ axiosInstance.interceptors.response.use(
                 console.error("Token refresh failed:", refreshError);
             }
         }
+
+        return error;
     }
 )
 
