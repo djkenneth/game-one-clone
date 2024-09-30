@@ -4,9 +4,6 @@ import { useAuth } from '@/context/AuthContext';
 export const MainPanelTop = () => {
     const { user, logout } = useAuth()
 
-    console.log(user);
-
-
     return (
         <div className="hidden bg-red-600 md:block">
             <div className="flex justify-between items-center mx-auto lg:max-w-[90%]">

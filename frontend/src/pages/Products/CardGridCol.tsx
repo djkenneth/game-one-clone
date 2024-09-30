@@ -14,7 +14,6 @@ import { FaStar } from "react-icons/fa6";
 import { HiOutlineShoppingBag } from "react-icons/hi2";
 
 export const CardGridCol = () => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { products, isLoading } = useProducts();
 
     if (isLoading) return 'Loading...'

@@ -104,14 +104,14 @@ export const MainMenu = () => {
                     <NavigationMenuList className="flex-wrap sm:gap-2 md:gap-5">
                         {menus.map((item) => (
                             <NavigationMenuItem key={item.title}>
-                                <Link to={item.href}>
+                                <Link to={`/products${item.href}`}>
                                     <NavigationMenuTrigger className="text-gray-950 text-[0.8rem] tracking-wider uppercase font-bold hover:text-red-600">{item.title}</NavigationMenuTrigger>
                                 </Link>
                                 <NavigationMenuContent>
                                     <ul className="grid gap-3 p-4 grid-cols-4 md:w-[500px] lg:w-[80rem]">
                                         {item.subMenu.map((subMenuItem) => (
                                             <li key={subMenuItem.title} className="text-gray-950 text-[0.8rem] tracking-wider uppercase font-bold p-3 hover:text-red-600">
-                                                <Link to={subMenuItem.href}>{subMenuItem.title}</Link>
+                                                <Link to={`/products${item.href}${subMenuItem.href}`}>{subMenuItem.title}</Link>
                                             </li>
                                         ))}
                                     </ul>

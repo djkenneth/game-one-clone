@@ -6,8 +6,12 @@ import { Product } from '@/types';
 interface ProductsContextType {
     products: Product[]; // Replace `any[]` with your product type
     isLoading: boolean;
+    setIsLoading: (loading: boolean) => void;
     error: string | null;
-    fetchProducts: () => Promise<void>;
+    fetchProducts: (skip: number, take: number, filters?: unknown) => Promise<void>;
+    totalCount: number;
+    lowestPrice: number;
+    highestPrice: number;
 }
 
 // Create the context
@@ -16,16 +20,23 @@ const ProductsContext = createContext<ProductsContextType | undefined>(undefined
 // Provider component
 export const ProductsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [products, setProducts] = useState<Product[]>([]); // Replace `any[]` with your product type
+    const [totalCount, setTotalCount] = useState(0)
+    const [lowestPrice, setLowestPrice] = useState(0);
+    const [highestPrice, setHightestPrice] = useState(0)
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+
     // Function to fetch products
-    const fetchProducts = async () => {
+    const fetchProducts = async (skip: number, take: number, filters?: unknown) => {
         setIsLoading(true);
         setError(null);
 
         try {
-            const { products } = await getProducts();
+            const { products, count, lowestPrice: lowest, highestPrice: highest } = await getProducts(skip, take, filters);
+            setTotalCount(count)
+            setLowestPrice(lowest)
+            setHightestPrice(highest)
             setProducts(products); // Set products in state
 
         } catch (err) {
@@ -37,11 +48,13 @@ export const ProductsProvider: React.FC<{ children: ReactNode }> = ({ children }
     };
 
     useEffect(() => {
-        fetchProducts(); // Automatically fetch products when the component mounts
+        fetchProducts(0, 36); // Automatically fetch products when the component mounts
     }, []);
 
+    const value = { products, isLoading, setIsLoading, error, fetchProducts, totalCount, lowestPrice, highestPrice }
+
     return (
-        <ProductsContext.Provider value={{ products, isLoading, error, fetchProducts }}>
+        <ProductsContext.Provider value={value}>
             {children}
         </ProductsContext.Provider>
     );

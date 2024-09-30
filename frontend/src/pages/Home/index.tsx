@@ -7,10 +7,11 @@ import {
     CarouselNext,
     CarouselPrevious,
 } from "@/components/ui/carousel"
+import FeaturedProduct from "@/components/Featured/FeaturedProduct";
 
 const Home = () => {
     return (
-        <div>
+        <>
             <Carousel
                 className="relative"
                 opts={{
@@ -45,7 +46,8 @@ const Home = () => {
                 <CarouselPrevious className="absolute top-1/2 left-6" />
                 <CarouselNext className="absolute top-1/2 right-6" />
             </Carousel>
-        </div>
+            <FeaturedProduct />
+        </>
     )
 }
 

@@ -17,7 +17,8 @@ function App() {
         <Layout>
           <Routes>
             <Route path='/' element={<HomePage />} />
-            <Route path='/products' element={<ProductPage />} />
+            <Route path='/products/:category' element={<ProductPage />} />
+            <Route path='/products/:category/:subCategory' element={<ProductPage />} />
             <Route path='/customer/account/login' element={
               <PublicRoute>
                 <LoginPage />

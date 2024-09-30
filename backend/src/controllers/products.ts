@@ -30,16 +30,45 @@ export const getAllProduct = async (req: Request, res: Response) => {
     try {
         const count = await prisma.product.count()
 
+        // Get the lowest price
+        const lowestPriceProduct = await prisma.product.findFirst({
+            orderBy: {
+                price: 'asc', // Ascending order to get the lowest price
+            },
+            select: {
+                price: true,  // Only select the price field
+            },
+        });
+
+        // Get the highest price
+        const highestPriceProduct = await prisma.product.findFirst({
+            orderBy: {
+                price: 'desc', // Descending order to get the highest price
+            },
+            select: {
+                price: true,  // Only select the price field
+            },
+        });
+
         const products = await prisma.product.findMany({
             include: { categories: true },
             skip: parseInt(skip as string) || 0,
-            take: parseInt(take as string) || 5,
+            take: parseInt(take as string) || 36,
             where: convertedFilters, // Apply dynamic filters
+            // where: {
+            //     AND: [
+            //         { price: { gte: 500 } },
+            //         { price: { lte: 12000 } },
+            //         { categories: { some: { slug: { contains: 'playstation' } } } }
+            //     ]
+            // }
         });
 
         res.json({
             count,
-            products
+            products,
+            lowestPrice: lowestPriceProduct?.price,
+            highestPrice: highestPriceProduct?.price,
         });
     } catch (error) {
         console.error('Error fetching products:', error);
