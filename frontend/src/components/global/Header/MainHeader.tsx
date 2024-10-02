@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 import {
     Sheet,
@@ -52,10 +53,10 @@ export const MainHeader = () => {
                         </Sheet>
                     </div>
                     <div className="flex items-center lg:flex-1">
-                        <a href="#" className="-m-1.5 p-1.5">
+                        <Link to="/" className="-m-1.5 p-1.5">
                             <span className="sr-only">Your Company</span>
                             <img alt="logo" src={logo} className="h-10 w-auto md:h-20" />
-                        </a>
+                        </Link>
                     </div>
                 </div>
                 <div className="hidden w-full bg-white max-w-lg items-center space-x-2 pl-2 rounded-xl md:flex">

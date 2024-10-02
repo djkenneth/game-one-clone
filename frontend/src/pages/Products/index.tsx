@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useProducts } from '@/context/ProductsContext';
 // import { formatNumberToCurrency } from '@/lib/utils';
 
@@ -10,19 +10,26 @@ import { CardGridCol } from './CardGridCol'
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
+import {
+    Pagination,
+    PaginationContent,
+    // PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination"
+
 
 const Products = () => {
-    const { fetchProducts, setIsLoading } = useProducts();
+    const { fetchProducts, skip, setSkip, take, nextPage, previesPage, pages, isPreviousActive, isNextActive, setIsLoading } = useProducts();
     const navigate = useNavigate();
     const { category, subCategory } = useParams();
-    const [skip, setSkip] = useState(0);
-    const [take, setTake] = useState(36);
+    const [search, setSearch] = useSearchParams();
     const [min, setMin] = useState<number>();
     const [max, setMax] = useState<number>();
     // const [defaultValue, setDefaultValue] = useState([lowestPrice, highestPrice])
     // const debouncedValue = useDebounce(defaultValue)
-
-    // const handleRangeChange = (value: number[]) => {
 
     const applyFilters = () => {
         setIsLoading(true)
@@ -34,20 +41,8 @@ const Products = () => {
             filters.AND.push(
                 { price: { gte: min } },
                 { price: { lte: max } },
-                { categories: { some: { slug: { contains: 'accessories' } } } }
             )
         }
-
-        fetchProducts(skip, take, filters)
-        setInterval(() => {
-            setIsLoading(false);
-        }, 500)
-    }
-
-    const onLoad = () => {
-        const filters: any = {
-            AND: [],
-        };
 
         if (category) {
             filters.AND.push(
@@ -61,12 +56,15 @@ const Products = () => {
             )
         }
 
-        fetchProducts(skip, take, filters); // Automatically fetch products when the component mounts
+        fetchProducts(skip, take, filters)
+        setInterval(() => {
+            setIsLoading(false);
+        }, 500)
     }
 
     useEffect(() => {
-        onLoad();
-    }, [navigate]);
+        applyFilters();
+    }, [navigate, skip]);
 
     return (
         <div className="container max-w-7xl mx-auto 2xl:max-w-[90%]">
@@ -101,8 +99,31 @@ const Products = () => {
                         </div>
                     </div>
                 </div>
-                <div className="w-[75%]">
+                <div className="w-[75%] space-y-5">
                     <CardGridCol />
+                    <Pagination>
+                        <PaginationContent>
+                            <PaginationItem className={isPreviousActive ? 'cursor-pointer' : 'pointer-events-none'}>
+                                <PaginationPrevious
+                                    onClick={previesPage}
+                                />
+                            </PaginationItem>
+                            {pages.map((page, index) => (
+                                <PaginationItem key={index.toString()} onClick={() => {
+                                    setSkip(page);
+                                    setSearch({ page: `${index + 1}` });
+                                }} className="cursor-pointer">
+                                    <PaginationLink>{index + 1}</PaginationLink>
+                                </PaginationItem>
+                            ))}
+                            {/* <PaginationItem>
+                                <PaginationEllipsis />
+                            </PaginationItem> */}
+                            <PaginationItem className={isNextActive ? 'cursor-pointer' : 'pointer-events-none'}>
+                                <PaginationNext onClick={nextPage} />
+                            </PaginationItem>
+                        </PaginationContent>
+                    </Pagination>
                 </div>
             </div>
         </div>

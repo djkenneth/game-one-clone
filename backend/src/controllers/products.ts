@@ -28,7 +28,9 @@ export const getAllProduct = async (req: Request, res: Response) => {
     const convertedFilters = convertValuesToNumbers(parsedFilters);
 
     try {
-        const count = await prisma.product.count()
+        const count = await prisma.product.count({
+            where: convertedFilters
+        })
 
         // Get the lowest price
         const lowestPriceProduct = await prisma.product.findFirst({
@@ -42,6 +44,7 @@ export const getAllProduct = async (req: Request, res: Response) => {
 
         // Get the highest price
         const highestPriceProduct = await prisma.product.findFirst({
+
             orderBy: {
                 price: 'desc', // Descending order to get the highest price
             },
@@ -53,7 +56,7 @@ export const getAllProduct = async (req: Request, res: Response) => {
         const products = await prisma.product.findMany({
             include: { categories: true },
             skip: parseInt(skip as string) || 0,
-            take: parseInt(take as string) || 36,
+            take: parseInt(take as string) || 10,
             where: convertedFilters, // Apply dynamic filters
             // where: {
             //     AND: [

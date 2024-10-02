@@ -1,5 +1,5 @@
 import { RouteProps, useNavigate } from 'react-router-dom';
-import { useAuth } from './AuthProvider';
+import { useAuth } from '@/context/AuthContext';
 import { useEffect } from 'react';
 
 type PublicRouteProps = RouteProps & {
@@ -10,7 +10,7 @@ export default function PublicRoute({
     children,
     redirectPath = '/',
 }: PublicRouteProps) {
-    const user = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
