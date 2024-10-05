@@ -7,7 +7,9 @@ import {
     CarouselNext,
     CarouselPrevious,
 } from "@/components/ui/carousel"
-import FeaturedProduct from "@/components/Featured/FeaturedProduct";
+import FeaturedProduct from "@/components/Sections/Featured/FeaturedProduct";
+import CategoryBoxes from "@/components/Sections/CategoryBoxes";
+import { FirstGrid, SecondGrid } from "@/components/Sections/Grid";
 
 const Home = () => {
     return (
@@ -47,6 +49,9 @@ const Home = () => {
                 <CarouselNext className="absolute top-1/2 right-6" />
             </Carousel>
             <FeaturedProduct />
+            <CategoryBoxes />
+            <FirstGrid />
+            <SecondGrid />
         </>
     )
 }

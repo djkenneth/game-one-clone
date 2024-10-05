@@ -3,12 +3,26 @@ import { getProducts } from '../api/products';
 import { Product } from '@/types';
 
 // Define the shape of our context state
+
+type FetchProductsCategoryType = {
+    skip?: number;
+    take?: number;
+    // category?: 'playstation' | 'nintendo' | 'laptop' | 'peripherals'
+    category?: 'console' | 'ps4-games' | 'ps5-games' | 'accessories'
+}
+
+type FetchProductsType = {
+    skip?: number;
+    take?: number;
+    filters?: unknown;
+}
+
 interface ProductsContextType {
     products: Product[]; // Replace `any[]` with your product type
     isLoading: boolean;
     setIsLoading: (loading: boolean) => void;
     error: string | null;
-    fetchProducts: (skip: number, take: number, filters?: unknown) => Promise<void>;
+    fetchProducts: ({ skip, take, filters }: FetchProductsType) => Promise<void>;
     skip: number;
     setSkip: (skip: number) => void;
     take: number;
@@ -21,6 +35,11 @@ interface ProductsContextType {
     totalCount: number;
     lowestPrice: number;
     highestPrice: number;
+    fetchCategoryProducts: ({ skip, take, category }: FetchProductsCategoryType) => Promise<void>;
+    featuredPlayStation: Product[];
+    featuredNintendo: Product[];
+    featuredLaptop: Product[];
+    featuredPCPeripherals: Product[];
 }
 
 // Create the context
@@ -39,18 +58,29 @@ export const ProductsProvider: React.FC<{ children: ReactNode }> = ({ children }
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Categories
+    const [featuredPlayStation, setFeaturedPlayStation] = useState<Product[]>([]);
+    const [featuredNintendo, setFeaturedNintendo] = useState<Product[]>([]);
+    const [featuredLaptop, setFeaturedLaptop] = useState<Product[]>([]);
+    const [featuredPCPeripherals, setFeaturedPCPeripherals] = useState<Product[]>([]);
+
+
     // Function to fetch products
-    const fetchProducts = async (_skip: number, _take: number, filters?: unknown) => {
+    const fetchProducts = async ({
+        skip = 0,
+        take = rowPerPage,
+        filters,
+    }: FetchProductsType) => {
         setIsLoading(true);
         setError(null);
 
         try {
-            const { products, count, lowestPrice: lowest, highestPrice: highest } = await getProducts(_skip, _take, filters);
+            const { products, count, lowestPrice: lowest, highestPrice: highest } = await getProducts(skip, take, filters);
 
+            setProducts(products); // Set products in state\
             setTotalCount(count)
             setLowestPrice(lowest)
             setHightestPrice(highest)
-            setProducts(products); // Set products in state
 
         } catch (err) {
             console.log(err)
@@ -59,6 +89,40 @@ export const ProductsProvider: React.FC<{ children: ReactNode }> = ({ children }
             setIsLoading(false);
         }
     };
+
+    // Function to fetch product by category
+    const fetchCategoryProducts = async ({
+        skip = 0,
+        take = 10,
+        category = 'console'
+    }: FetchProductsCategoryType) => {
+        setIsLoading(true);
+        setError(null);
+
+        const filters: any = {
+            categories: { some: { slug: { contains: category } } }
+        }
+
+        try {
+            const { products } = await getProducts(skip, take, filters);
+
+            if (category === 'console') {
+                setFeaturedPlayStation(products)
+            } else if (category === 'ps4-games') {
+                setFeaturedNintendo(products)
+            } else if (category === 'ps5-games') {
+                setFeaturedLaptop(products)
+            } else if (category === 'accessories') {
+                setFeaturedPCPeripherals(products)
+            }
+
+        } catch (err) {
+            console.log(err)
+            setError('Failed to fetch products');
+        } finally {
+            setIsLoading(false);
+        }
+    }
 
     const nextPage = () => {
         setSkip(skip + rowPerPage);
@@ -71,7 +135,6 @@ export const ProductsProvider: React.FC<{ children: ReactNode }> = ({ children }
     const isPreviousActive = skip > 0 ? true : false;
     const isNextActive = (totalCount - rowPerPage) >= skip ? true : false;
 
-
     const numberOfPage = () => {
         const result = [];
         let value = 0;
@@ -83,8 +146,6 @@ export const ProductsProvider: React.FC<{ children: ReactNode }> = ({ children }
             value += 20;  // Increment the value by 20
         }
 
-        console.log(result)
-
         setPages(result);
     }
 
@@ -92,9 +153,9 @@ export const ProductsProvider: React.FC<{ children: ReactNode }> = ({ children }
         numberOfPage();
     }, [totalCount])
 
-    useEffect(() => {
-        fetchProducts(skip, take); // Automatically fetch products when the component mounts
-    }, []);
+    // useEffect(() => {
+    //     fetchProducts(skip, take); // Automatically fetch products when the component mounts
+    // }, []);
 
     const value = {
         products,
@@ -113,7 +174,12 @@ export const ProductsProvider: React.FC<{ children: ReactNode }> = ({ children }
         isNextActive,
         totalCount,
         lowestPrice,
-        highestPrice
+        highestPrice,
+        fetchCategoryProducts,
+        featuredPlayStation,
+        featuredNintendo,
+        featuredLaptop,
+        featuredPCPeripherals
     }
 
     return (

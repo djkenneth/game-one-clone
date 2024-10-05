@@ -30,7 +30,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Login function
     const login = async (data: LoginData) => {
         const res = await loginApi(data);
-        console.log('res', res);
 
         if (res?.status === 404 || res.status === 400) {
             toast({

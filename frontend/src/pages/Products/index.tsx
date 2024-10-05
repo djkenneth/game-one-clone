@@ -56,7 +56,7 @@ const Products = () => {
             )
         }
 
-        fetchProducts(skip, take, filters)
+        fetchProducts({ skip, take, filters })
         setInterval(() => {
             setIsLoading(false);
         }, 500)
