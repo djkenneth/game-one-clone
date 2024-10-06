@@ -1,6 +1,6 @@
-import { MainHeader } from "./MainHeader";
-import { MainMenu } from "./MainMenu";
-import { MainPanelTop } from "./MainPanelTop";
+import { MainHeader } from './MainHeader';
+import { MainMenu } from './MainMenu';
+import { MainPanelTop } from './MainPanelTop';
 
 // import {
 //     Accordion,
@@ -10,13 +10,13 @@ import { MainPanelTop } from "./MainPanelTop";
 // } from "@/components/ui/accordion"
 
 export const Header = () => {
-    return (
-        <header className="bg-white">
-            <nav aria-label="Global">
-                <MainPanelTop />
-                <MainHeader />
-                <MainMenu />
-                {/* <div>
+  return (
+    <header className="bg-white">
+      <nav aria-label="Global">
+        <MainPanelTop />
+        <MainHeader />
+        <MainMenu />
+        {/* <div>
                     <Accordion type="single" collapsible>
                         <AccordionItem value="item-1">
                             <AccordionTrigger className="text-lg font-semibold uppercase hover:no-underline">Is it accessible?</AccordionTrigger>
@@ -32,7 +32,7 @@ export const Header = () => {
                         </AccordionItem>
                     </Accordion>
                 </div> */}
-            </nav>
-        </header>
-    )
-}
+      </nav>
+    </header>
+  );
+};
