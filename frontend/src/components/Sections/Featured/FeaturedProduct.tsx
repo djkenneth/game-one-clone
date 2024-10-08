@@ -1,3 +1,4 @@
+import Container from '@/components/ui/container';
 import FeaturedProductCarousel from './FeaturedProductCarousel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useProducts } from '@/context/ProductsContext';
@@ -21,7 +22,7 @@ function FeaturedProduct() {
   }, []);
 
   return (
-    <div className="mx-auto py-24 lg:max-w-[90%]">
+    <Container className="py-24">
       <Tabs defaultValue="playstation" className="flex w-full flex-col">
         <h1 className="text-2xl font-medium uppercase">Featured Products</h1>
         <TabsList className="justify-end gap-4 bg-transparent">
@@ -55,7 +56,7 @@ function FeaturedProduct() {
         </TabsContent>
         <TabsContent value="computer-parts">Make changes to your account here.</TabsContent>
       </Tabs>
-    </div>
+    </Container>
   );
 }
 
