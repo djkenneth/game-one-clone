@@ -1,3 +1,5 @@
+import { useAuth } from '@/context/AuthContext';
+
 import { Button } from '@/components/ui/button';
 // components
 import { Card, CardImage, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +13,8 @@ import { HiOutlineShoppingBag } from 'react-icons/hi2';
 import { Link } from 'react-router-dom';
 
 function PrimaryCard({ id, slug, image, title, price }: Product) {
+  const { handleAddtoCart } = useAuth();
+
   return (
     <Link to={`/product/${slug}/${id}`}>
       <Card className="group shadow-inner hover:shadow-lg">
@@ -28,10 +32,10 @@ function PrimaryCard({ id, slug, image, title, price }: Product) {
             <FaStar className="text-xs text-yellow-400" />
           </div>
           <p className="text-center font-medium">{formatNumberToCurrency(price)}</p>
-          <Button variant="secondary" size="sm" className="inline-flex group-hover:hidden">
+          <Button onClick={handleAddtoCart} variant="secondary" size="sm" className="inline-flex group-hover:hidden">
             <HiOutlineShoppingBag className="mr-2 h-4 w-4" /> ADD TO CART
           </Button>
-          <Button variant="destructive" size="sm" className="hidden group-hover:inline-flex">
+          <Button onClick={handleAddtoCart} variant="destructive" size="sm" className="hidden group-hover:inline-flex">
             <HiOutlineShoppingBag className="mr-2 h-4 w-4" /> ADD TO CART
           </Button>
         </CardContent>

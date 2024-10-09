@@ -76,16 +76,16 @@ const Products = () => {
               <h3 className="font-mono text-lg font-bold uppercase">Price range</h3>
               <div>
                 {/* {lowestPrice && highestPrice && (
-                                    <Slider
-                                        defaultValue={defaultValue}
-                                        min={lowestPrice}
-                                        max={highestPrice}
-                                        step={5}
-                                        onValueChange={setDefaultValue}
-                                        formatLabel={(value) => `${formatNumberToCurrency(value)}`}
-                                        minStepsBetweenThumbs={0}
-                                    />
-                                )} */}
+                    <Slider
+                        defaultValue={defaultValue}
+                        min={lowestPrice}
+                        max={highestPrice}
+                        step={5}
+                        onValueChange={setDefaultValue}
+                        formatLabel={(value) => `${formatNumberToCurrency(value)}`}
+                        minStepsBetweenThumbs={0}
+                    />
+                )} */}
                 <div className="flex justify-between">
                   <Input type="number" min={0} placeholder="MIN" onChange={(e) => setMin(parseInt(e.target.value))} />
                   <Input type="number" min={0} placeholder="MAX" onChange={(e) => setMax(parseInt(e.target.value))} />

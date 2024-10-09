@@ -1,17 +1,22 @@
 import { getUser, login as loginApi, signup as signupApi, logout as logoutApi } from '../api/auth';
+import { addToCartItem } from '../api/cart';
 import { useToast } from '@/hooks/use-toast';
 import { SignupData, LoginData } from '@/types/auth';
+import { AddCartItemData } from '@/types/cart';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // Define the shape of our context state
 interface AuthContextType {
+  openLoginModal: boolean,
+  setOpenLoginModal: (open: boolean) => void;
   user: { name: string } | null;
   accessToken: string | null;
   login: (data: LoginData) => Promise<void>;
   signup: (data: SignupData) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  handleAddtoCart: ({ productId, quantity }: AddCartItemData) => Promise<void>;
 }
 
 // Create context
@@ -21,6 +26,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [openLoginModal, setOpenLoginModal] = useState<boolean>(false)
   const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState<string | null>(localStorage.getItem('accessToken'));
 
@@ -73,6 +79,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const handleAddtoCart = async ({ productId, quantity }: AddCartItemData) => {
+    if (isAuthenticated) {
+      await addToCartItem({ productId, quantity })
+    } else {
+      setOpenLoginModal(true)
+    }
+  }
+
   // Logout function
   const logout = () => {
     localStorage.removeItem('accessToken');
@@ -99,8 +113,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     fetchUser();
   }, [accessToken]);
 
+  const value = {
+    user,
+    accessToken,
+    isAuthenticated,
+    openLoginModal,
+
+    // set state
+    setOpenLoginModal,
+
+    // function
+    login,
+    signup,
+    logout,
+    handleAddtoCart
+  }
+
   return (
-    <AuthContext.Provider value={{ user, accessToken, login, signup, logout, isAuthenticated }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

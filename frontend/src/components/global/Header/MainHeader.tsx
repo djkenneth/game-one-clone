@@ -18,6 +18,7 @@ import { HiOutlineShoppingBag } from 'react-icons/hi';
 import { IoMenu } from 'react-icons/io5';
 import { LuHeart } from 'react-icons/lu';
 import { Link } from 'react-router-dom';
+import { GoDash, GoPlus } from "react-icons/go";
 
 export const MainHeader = () => {
   const [toggleSearch, setToggleSearch] = useState(false);
@@ -73,15 +74,35 @@ export const MainHeader = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-full">
               <SheetHeader>
-                <SheetTitle>Edit profile</SheetTitle>
-                <SheetDescription>Make changes to your profile here. Click save when you're done.</SheetDescription>
+                <SheetTitle>Your Cart</SheetTitle>
+                {/* <SheetDescription>Make changes to your profile here. Click save when you're done.</SheetDescription> */}
               </SheetHeader>
-              <div className="grid gap-4 py-4"></div>
-              <SheetFooter>
+              <div className="grid gap-4 py-4">
+                <div className="flex">
+                  <img src="https://gameone.ph/media/catalog/product/cache/d378a0f20f83637cdb1392af8dc032a2/p/s/ps4_g._evil_west_r2_.jpg" className="w-24" />
+                  <div className="flex flex-col justify-between">
+                    <div className='flex'>
+                      <p>ajshdjkashd</p>
+                    </div>
+                    <div className="flex">
+                      <div className='flex items-center gap-3'>
+                        <Button variant="outline" size="icon">
+                          <GoDash />
+                        </Button>
+                        <p>2</p>
+                        <Button variant="outline" size="icon">
+                          <GoPlus />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* <SheetFooter>
                 <SheetClose asChild>
                   <Button type="submit">Save changes</Button>
                 </SheetClose>
-              </SheetFooter>
+              </SheetFooter> */}
             </SheetContent>
           </Sheet>
         </div>

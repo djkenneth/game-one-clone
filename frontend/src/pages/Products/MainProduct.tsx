@@ -3,6 +3,7 @@ import Container from '@/components/ui/container';
 import { useProducts } from '@/context/ProductsContext';
 import { formatNumberToCurrency, parseMarkdown } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/context/AuthContext';
 
 // Icons
 import { FaStar } from 'react-icons/fa6';
@@ -13,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { HiOutlineShoppingBag } from 'react-icons/hi2';
 import { twMerge } from 'tailwind-merge';
 import { cva } from 'class-variance-authority';
+import Image from '@/components/ui/image';
 
 const TabsTriggerStyles = cva([
   'data-[state=active]:bg-transparent data-[state=active]:text-red-600 data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-red-600 uppercase'
@@ -23,6 +25,7 @@ type MainProducType = {
 };
 
 function MainProduct({ productId }: MainProducType) {
+  const { handleAddtoCart } = useAuth();
   const { onFetchProduct, product } = useProducts();
 
   const [quantity, setQuantity] = useState<number>(1);
@@ -43,10 +46,14 @@ function MainProduct({ productId }: MainProducType) {
 
   return (
     <Container>
-      <div className="flex flex-col gap-4 md:flex-row">
-        <div className="w-full border md:w-[30%]">
-          <img src={product?.image} className="w-full" />
-          <p className="text-sm text-center">{product?.title}</p>
+      <div className="flex flex-col gap-4 h-[26rem] md:flex-row">
+        <div className="w-full relative border md:w-[30%]">
+          {/* <div>
+            <img src={product?.image} className="w-full" />
+            
+          </div> */}
+          <Image src={product?.image} />
+          <p className="text-sm text-center absolute bottom-1 w-full">{product?.title}</p>
         </div>
         <div className="w-full space-y-5 md:w-[70%]">
           <div>
@@ -77,12 +84,12 @@ function MainProduct({ productId }: MainProducType) {
               <Button variant="outline" size="icon" onClick={decrement}>
                 <GoDash />
               </Button>
-              <Input type="text" className="w-14 text-center font-bold" value={quantity} />
+              <Input type="text" className="w-14 text-center font-bold" value={quantity} onChange={(e) => setQuantity(parseInt(e.target.value))} />
               <Button variant="outline" size="icon" onClick={increment}>
                 <GoPlus />
               </Button>
             </div>
-            <Button variant="solidred" size="lg" className="group-hover:inline-flex">
+            <Button onClick={() => handleAddtoCart({ productId: parseInt(productId), quantity })} variant="solidred" size="lg" className="group-hover:inline-flex">
               <HiOutlineShoppingBag className="mr-2 h-4 w-4" /> ADD TO CART
             </Button>
           </div>
