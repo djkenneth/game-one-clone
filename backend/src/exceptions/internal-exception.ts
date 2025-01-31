@@ -1,3 +1,5 @@
+// src/exceptions/internal-exception.ts
+
 import { HttpException } from "./root";
 
 export class InternalException extends HttpException {

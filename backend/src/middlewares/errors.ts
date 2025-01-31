@@ -1,3 +1,5 @@
+// src/middlewares/errors.ts
+
 import { NextFunction, Request, Response } from "express";
 import { HttpException } from "../exceptions/root";
 

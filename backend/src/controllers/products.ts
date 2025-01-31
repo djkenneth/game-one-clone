@@ -1,10 +1,12 @@
+// src/controllers/products.ts
+
 import { Request, Response } from 'express';
 import qs from 'qs';
-import { prisma } from '../index'
-import { generateSlug } from '../lib/index'
-import { createProductSchema } from '../schema/products';
 import { NotFoundException } from '../exceptions/not-found';
 import { ErrorCode } from '../exceptions/root';
+import { prisma } from '../index';
+import { generateSlug } from '../lib/index';
+import { createProductSchema } from '../schema/products';
 
 const convertValuesToNumbers = (obj: any): any => {
     for (const key in obj) {

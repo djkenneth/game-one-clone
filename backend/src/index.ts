@@ -1,12 +1,14 @@
-import express, { Express } from 'express';
+// src/index.ts
+
 import { PrismaClient } from '@prisma/client';
 import cors from 'cors';
+import express, { Express } from 'express';
 // import bodyparser from 'body-parser'
 // import helmet from 'helmet'
-import { PORT } from './secret'
+import { PORT } from './secret';
 
-import rootRouter from './routes';
 import { errorMiddleware } from './middlewares/errors';
+import rootRouter from './routes';
 
 const app: Express = express();
 

@@ -1,8 +1,10 @@
+// src/error-handler.ts
+
 import { NextFunction, Request, Response } from "express"
-import { ErrorCode, HttpException } from "./exceptions/root"
-import { InternalException } from "./exceptions/internal-exception"
 import { ZodError } from "zod"
 import { BadRequestException } from "./exceptions/bad-request"
+import { InternalException } from "./exceptions/internal-exception"
+import { ErrorCode, HttpException } from "./exceptions/root"
 
 export const errorHandler = (method: Function) => {
     return async (req: Request, res: Response, next: NextFunction) => {

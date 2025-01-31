@@ -1,10 +1,12 @@
+// src/controllers/users.ts
+
+import { Address } from "@prisma/client"
 import { Request, Response } from "express"
 import { prisma } from ".."
-import { AddressSchema, ProfileSchema, UpdateUserSchema } from "../schema/users"
+import { BadRequestException } from "../exceptions/bad-request"
 import { NotFoundException } from "../exceptions/not-found"
 import { ErrorCode } from "../exceptions/root"
-import { Address } from "@prisma/client"
-import { BadRequestException } from "../exceptions/bad-request"
+import { AddressSchema, ProfileSchema, UpdateUserSchema } from "../schema/users"
 
 export const createAddress = async (req: Request, res: Response) => {
     AddressSchema.parse(req.body)

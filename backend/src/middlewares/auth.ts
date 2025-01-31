@@ -1,9 +1,11 @@
+// src/middlewares/auth.ts
+
 import { NextFunction, Request, Response } from "express";
-import { UnauthorizedException } from "../exceptions/unauthorized";
-import { ErrorCode } from "../exceptions/root";
-import * as jwt from 'jsonwebtoken'
-import { JWT_SECRET } from "../secret";
+import * as jwt from 'jsonwebtoken';
 import { prisma } from "..";
+import { ErrorCode } from "../exceptions/root";
+import { UnauthorizedException } from "../exceptions/unauthorized";
+import { JWT_SECRET } from "../secret";
 
 const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     // 1 - extract the token from the Authorization header

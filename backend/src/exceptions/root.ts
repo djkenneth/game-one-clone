@@ -1,3 +1,5 @@
+// src/exceptions/root.ts
+
 // message, status, code, error codes, error
 
 export class HttpException extends Error {

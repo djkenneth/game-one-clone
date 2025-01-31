@@ -1,13 +1,15 @@
+// src/controllers/auth.ts
+
+import { compareSync, hashSync } from 'bcrypt';
 import { NextFunction, Request, Response } from 'express';
-import { hashSync, compareSync } from 'bcrypt'
-import * as jwt from 'jsonwebtoken'
-import { prisma } from '../index'
-import { JWT_SECRET, JWT_REFRESH_SECRET } from '../secret';
+import * as jwt from 'jsonwebtoken';
 import { BadRequestException } from '../exceptions/bad-request';
-import { ErrorCode } from '../exceptions/root';
-import { SignUpSchema } from '../schema/users';
 import { NotFoundException } from '../exceptions/not-found';
+import { ErrorCode } from '../exceptions/root';
 import { UnauthorizedException } from '../exceptions/unauthorized';
+import { prisma } from '../index';
+import { SignUpSchema } from '../schema/users';
+import { JWT_REFRESH_SECRET, JWT_SECRET } from '../secret';
 
 const saltRounds = 10;
 const accessTokenExpiry = '1d'; // Access token expires in 1 day

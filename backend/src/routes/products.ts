@@ -1,9 +1,11 @@
-import { Router, Request, Response } from 'express';
+// src/routes/products.ts
+
+import { Router } from 'express';
 
 import { createProduct, deleteProduct, getAllProduct, getProductById, searchProducts, updateProduct } from '../controllers/products';
 import { errorHandler } from '../error-handler';
-import authMiddleware from '../middlewares/auth';
 import adminMiddleware from '../middlewares/admin';
+import authMiddleware from '../middlewares/auth';
 
 const productRouter = Router();
 

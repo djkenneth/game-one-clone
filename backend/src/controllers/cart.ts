@@ -1,9 +1,11 @@
+// src/controllers/cart.ts
+
+import { Product } from "@prisma/client";
 import { Request, Response } from "express";
-import { ChnageQuantitySchema, CreateCartSchema } from "../schema/cart";
+import { prisma } from "..";
 import { NotFoundException } from "../exceptions/not-found";
 import { ErrorCode } from "../exceptions/root";
-import { Product } from "@prisma/client";
-import { prisma } from "..";
+import { ChnageQuantitySchema, CreateCartSchema } from "../schema/cart";
 
 export const addItemToCart = async (req: Request, res: Response) => {
     const validateData = CreateCartSchema.parse(req.body)

@@ -1,3 +1,5 @@
+// src/exceptions/bad-request.ts
+
 import { ErrorCode, HttpException } from "./root";
 
 export class BadRequestException extends HttpException {

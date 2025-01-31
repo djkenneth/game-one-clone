@@ -1,3 +1,5 @@
+// src/exceptions/unauthorized.ts
+
 import { HttpException } from "./root";
 
 export class UnauthorizedException extends HttpException {
