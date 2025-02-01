@@ -1,19 +1,181 @@
-// src/routes/auth.ts
+import { compareSync, hashSync } from 'bcrypt'
+import { Elysia, t } from 'elysia'
+import { prisma } from '../index'
+import { auth } from '../plugins/auth'
+import { SignUpSchema } from '../schema/users'
+import { BadRequestError, UnauthorizedError } from '../utils/errors'
 
-import { Router } from 'express';
-import { login, me, refreshToken, signup } from '../controllers/auth';
-import { errorHandler } from '../error-handler';
-import authMiddleware from '../middlewares/auth';
+const SALT_ROUNDS = 10
 
-const authRouter = Router();
+// Response Types
+const UserResponseType = t.Object({
+  id: t.Number(),
+  email: t.String(),
+  name: t.String(),
+  role: t.String()
+})
 
-// Signup User Route
-authRouter.post('/signup', errorHandler(signup))
-// Login User Route
-authRouter.post('/login', errorHandler(login))
-// Refresh Token Route
-authRouter.post('/refresh-token', errorHandler(refreshToken));
-// Profile Route
-authRouter.get('/me', [authMiddleware], errorHandler(me))
+const AuthResponseType = t.Object({
+  success: t.Boolean(),
+  data: t.Object({
+    accessToken: t.String(),
+    user: UserResponseType
+  })
+})
 
-export default authRouter;
+export const authRouter = new Elysia({ prefix: '/auth' })
+  // Signup
+  .post('/signup', 
+    async ({ body }) => {
+      const validated = SignUpSchema.parse(body)
+      const { email, password, name } = validated
+
+      const existingUser = await prisma.user.findFirst({ 
+        where: { email } 
+      })
+
+      if (existingUser) {
+        throw new BadRequestError('User already exists')
+      }
+
+      const user = await prisma.user.create({
+        data: {
+          name,
+          email,
+          password: hashSync(password, SALT_ROUNDS)
+        }
+      })
+
+      return { 
+        success: true,
+        data: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role
+        }
+      }
+    },
+    {
+      body: t.Object({
+        email: t.String({ format: 'email' }),
+        password: t.String({ minLength: 6 }),
+        name: t.String()
+      }),
+      detail: {
+        tags: ['Authentication'],
+        summary: 'Register a new user',
+        description: 'Create a new user account with email and password',
+        responses: {
+          200: {
+            description: 'User successfully created',
+            content: {
+              'application/json': {
+                schema: t.Object({
+                  success: t.Boolean(),
+                  data: t.Object({
+                    id: t.Number(),
+                    email: t.String(),
+                    name: t.String()
+                  })
+                })
+              }
+            }
+          },
+          400: {
+            description: 'Bad request - User already exists or invalid input'
+          }
+        }
+      }
+    }
+  )
+
+  // Login
+  .post('/login',
+    async ({ body, jwt }) => {
+      const { email, password } = body
+
+      const user = await prisma.user.findFirst({ 
+        where: { email } 
+      })
+
+      if (!user) {
+        throw new UnauthorizedError('Invalid credentials')
+      }
+
+      if (!compareSync(password, user.password)) {
+        throw new UnauthorizedError('Invalid credentials')
+      }
+
+      const accessToken = await jwt.sign({ 
+        userId: user.id 
+      })
+
+      return { 
+        accessToken,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name
+        }
+      }
+    },
+    {
+      body: t.Object({
+        email: t.String({ format: 'email' }),
+        password: t.String()
+      }),
+      detail: {
+        tags: ['Authentication'],
+        summary: 'User login',
+        description: 'Authenticate a user and receive a JWT token',
+        responses: {
+          200: {
+            description: 'Successfully authenticated',
+            content: {
+              'application/json': {
+                schema: AuthResponseType
+              }
+            }
+          },
+          401: {
+            description: 'Invalid credentials'
+          }
+        }
+      }
+    }
+  )
+
+  // Profile
+  .get('/me',
+    async ({ user }) => {
+      return { user }
+    },
+    { 
+      beforeHandle: [auth],
+      detail: {
+        tags: ['Authentication'],
+        summary: 'Get user profile',
+        description: 'Get the profile of the currently authenticated user',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: {
+            description: 'User profile retrieved successfully',
+            content: {
+              'application/json': {
+                schema: t.Object({
+                  success: t.Boolean(),
+                  data: t.Object({
+                    user: UserResponseType
+                  })
+                })
+              }
+            }
+          },
+          401: {
+            description: 'Unauthorized - Invalid or missing token'
+          }
+        }
+      }
+    }
+  )

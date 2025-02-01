@@ -6,11 +6,9 @@
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["fullTextSearch", "fullTextIndex"]
 }
-
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -84,7 +82,7 @@ model Product {
   price        Int
   availability Boolean
   image        String
-  description  String         @db.LongText
+  description  String         
   sku          String         @unique
   url          String
   tags         String?
@@ -93,8 +91,6 @@ model Product {
   categories   Category[]     @relation("ProductCategories")
   CartItem     CartItem[]
   orders       OrderProduct[]
-
-  @@fulltext([title, description, tags])
 }
 
 model Category {
