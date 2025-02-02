@@ -152,7 +152,7 @@ export const authRouter = new Elysia({ prefix: '/auth' })
       return { user }
     },
     { 
-      beforeHandle: [auth],
+      onBeforeHandle: [auth],
       detail: {
         tags: ['Authentication'],
         summary: 'Get user profile',

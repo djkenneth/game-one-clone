@@ -27,7 +27,7 @@
     ]
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "bun prisma/seed.ts"
   },
   "keywords": [],
   "author": "",

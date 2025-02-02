@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { products } from '../data/products';
-import { generateSlug } from '../src/lib/index'
+import { generateSlug } from '../src/lib/index';
+
 const prisma = new PrismaClient();
 async function main() {
     // To run the seed
@@ -18,8 +19,8 @@ async function main() {
                 slug: generateSlug(product.title),
                 categories: {
                     connectOrCreate: [
-                        { where: { name: product.categories[0] }, create: { name: product.categories[0], slug: generateSlug(product.categories[0]) } },
-                        { where: { name: product.categories[1] }, create: { name: product.categories[1], slug: generateSlug(product.categories[1]) } },
+                        { where: { name: product.categories[0] }, create: { name: product.categories[0]!, slug: generateSlug(product.categories[0]!) } },
+                        { where: { name: product.categories[1] }, create: { name: product.categories[1]! , slug: generateSlug(product.categories[1]!) } },
                     ]
                 }
             }
@@ -32,6 +33,7 @@ main()
         await prisma.$disconnect();
     })
     .catch(async (e) => {
+        // eslint-disable-next-line no-console
         console.error(e);
         await prisma.$disconnect()
     })

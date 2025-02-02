@@ -646,123 +646,123 @@ export const products = [
         availability: true,
         image: "https://gameone.ph/media/catalog/product/cache/d378a0f20f83637cdb1392af8dc032a2/p/l/playstation_icons_light_ps5_xl.jpg",
         description: "LIGHT THE NIGHT- Light up your bedroom with the symbols and icons from the hugely popular and fun Playstation 5 gaming system. The Playstation icons light illuminates the dark with a soft glow.\nMODES- This light has 3 different light modes with standard lighting and special effect color phasing. It's music reactive so you can turn up the sound. Use this novel decoration for a themed room.\nDETAILS- USB or battery powered light, approximately 32 cm(11.8\") tall. USB cable included, 3 x AAA batteries not included. This is an officially licensed product.\nFUN GIFTS FOR FUN PEOPLE- For those looking for cool stuff and all things geek, crazy, and unique, we are proud to create top selling toys, mugs, collectibles, and presents that make people smile\nOFFICIALLY LICENSED MERCHANDISE- This cool collectible is a unique addition to any fan's set. Give this collector's item to men, women, fans, kids, boys, and girls who love pop culture fun",
-        "sku": "5055964766467",
-        "url": "https://gameone.ph/paladone-playstation-icons-light-ps5-xl-pp7917ps.html",
-        "categories": [
+        sku: "5055964766467",
+        url: "https://gameone.ph/paladone-playstation-icons-light-ps5-xl-pp7917ps.html",
+        categories: [
             "PlayStation",
             "Others"
         ]
     },
     {
-        "title": "Paladone Playstation Icons Light XL V2 - PP5852PSV2",
-        "price": 2095,
-        "availability": true,
-        "image": "https://gameone.ph/media/catalog/product/cache/d378a0f20f83637cdb1392af8dc032a2/p/l/playstation_icons_light_xl_v2.jpg",
-        "description": "LIGHT THE NIGHT- Light up your bedroom with the symbols and icons from the hugely popular and fun PlayStation gaming system. The PlayStation Icon Light illuminates the dark with a soft colorful glow.\nCONVERSATION STARTER- When hosting your next party or game night at your home, get everyone talking about your iconic, stylish PlayStation Icons Light. Instantly recognizable, everyone will want one!\nMODES- This light has 3 different light modes with standard lighting and special effect color phasing. It’s music reactive, so you can turn up the sound. Use this novel decoration for a themed room.\nPERFECT PRESENT- This instantly recognizable PlayStation Icon Light makes a great present for geeks and fans of the popular gaming system. Perfect as a unique stocking stuffer or birthday present.\nSPECIFICATIONS- USB or battery powered light, approx. 30cm (12”) wide x 10cm (4”) tall. (USB cable included, 3 x AAA batteries not included). Officially licensed product.",
-        "sku": "5055964731281",
-        "url": "https://gameone.ph/paladone-playstation-icons-light-xl-v2-pp5852psv2.html",
-        "categories": [
+        title: "Paladone Playstation Icons Light XL V2 - PP5852PSV2",
+        price: 2095,
+        availability: true,
+        image: "https://gameone.ph/media/catalog/product/cache/d378a0f20f83637cdb1392af8dc032a2/p/l/playstation_icons_light_xl_v2.jpg",
+        description: "LIGHT THE NIGHT- Light up your bedroom with the symbols and icons from the hugely popular and fun PlayStation gaming system. The PlayStation Icon Light illuminates the dark with a soft colorful glow.\nCONVERSATION STARTER- When hosting your next party or game night at your home, get everyone talking about your iconic, stylish PlayStation Icons Light. Instantly recognizable, everyone will want one!\nMODES- This light has 3 different light modes with standard lighting and special effect color phasing. It’s music reactive, so you can turn up the sound. Use this novel decoration for a themed room.\nPERFECT PRESENT- This instantly recognizable PlayStation Icon Light makes a great present for geeks and fans of the popular gaming system. Perfect as a unique stocking stuffer or birthday present.\nSPECIFICATIONS- USB or battery powered light, approx. 30cm (12”) wide x 10cm (4”) tall. (USB cable included, 3 x AAA batteries not included). Officially licensed product.",
+        sku: "5055964731281",
+        url: "https://gameone.ph/paladone-playstation-icons-light-xl-v2-pp5852psv2.html",
+        categories: [
             "PlayStation",
             "Others"
         ]
     },
     {
-        "title": "Paladone Playstation Heritage Icons Light - PP9373PS",
-        "price": 1995,
-        "availability": true,
-        "image": "https://gameone.ph/media/catalog/product/cache/d378a0f20f83637cdb1392af8dc032a2/p/l/playstation_heritage_icons_light.jpg",
-        "description": "THREE LIGHT MODES- For lighting your game room or party, the PlayStation Icons Light can do it all with three light modes which include normal, color phasing, and music reactive\nHERITAGE ICONS- Bring home some nostalgia with the PlayStation Icons Light. It measures 10 cm x 30 cm (4” x 11.8”) and is dual powered. USB lead included. 3 x AAA batteries required (not included)\nICONIC BRAND- PlayStation is one of the top gaming brands in the world with its logo, video games, icons, console, controller, and name being instantly recognizable to gamers of all ages\nFUN GIFTS FOR FUN PEOPLE- For those looking for cool stuff and all things geek, crazy, and unique, we are proud to create top-selling toys, mugs, lights, decor, and presents that make people smile\nOFFICIALLY LICENSED MERCHANDISE- Discover a new piece of merch for your collection with our array of collectibles for men, women, fans, kids, boys, and girls who love pop culture fun",
-        "sku": "5055964788704",
-        "url": "https://gameone.ph/paladone-playstation-heritage-icons-light-pp9373ps.html",
-        "categories": [
+        title: "Paladone Playstation Heritage Icons Light - PP9373PS",
+        price: 1995,
+        availability: true,
+        image: "https://gameone.ph/media/catalog/product/cache/d378a0f20f83637cdb1392af8dc032a2/p/l/playstation_heritage_icons_light.jpg",
+        description: "THREE LIGHT MODES- For lighting your game room or party, the PlayStation Icons Light can do it all with three light modes which include normal, color phasing, and music reactive\nHERITAGE ICONS- Bring home some nostalgia with the PlayStation Icons Light. It measures 10 cm x 30 cm (4” x 11.8”) and is dual powered. USB lead included. 3 x AAA batteries required (not included)\nICONIC BRAND- PlayStation is one of the top gaming brands in the world with its logo, video games, icons, console, controller, and name being instantly recognizable to gamers of all ages\nFUN GIFTS FOR FUN PEOPLE- For those looking for cool stuff and all things geek, crazy, and unique, we are proud to create top-selling toys, mugs, lights, decor, and presents that make people smile\nOFFICIALLY LICENSED MERCHANDISE- Discover a new piece of merch for your collection with our array of collectibles for men, women, fans, kids, boys, and girls who love pop culture fun",
+        sku: "5055964788704",
+        url: "https://gameone.ph/paladone-playstation-heritage-icons-light-pp9373ps.html",
+        categories: [
             "PlayStation",
             "Others"
         ]
     },
     {
-        "title": "Paladone Playstation PS5 Icons Light PS5 - PP7918PSV2",
-        "price": 1995,
-        "availability": true,
-        "image": "https://gameone.ph/media/catalog/product/cache/d378a0f20f83637cdb1392af8dc032a2/p/l/playstation_icons_light_ps5.jpg",
-        "description": "LIGHT THE NIGHT- Light up your bedroom with the iconic symbols from the hugely popular PlayStation gaming system. The PlayStation 5 Icon Light illuminates the dark with a soft glow that phases from white to blue\nCONVERSATION STARTER- When hosting your next party or game night at your home, get everyone talking about your iconic, stylish PS5 Icons Light. Instantly recognizable, everyone will want one\nPERFECT PRESENT- This instantly recognizable PlayStation Icon Light makes a great present for geeks and fans of the popular gaming system. Perfect as a unique stocking stuffer or birthday present\nFUN GIFTS FOR FUN PEOPLE- For those looking for cool stuff and all things geek, crazy, and unique, we are proud to create top selling toys, mugs, collectibles, and presents that make people smile\nOFFICIALLY LICENSED MERCHANDISE- This cool collectible is a unique addition to any fan's set. Give this collector's item to men, women, fans, kids, boys, and girls who love pop culture fun",
-        "sku": "5055964766474",
-        "url": "https://gameone.ph/paladone-playstation-ps5-icons-light-ps5-pp7918psv2.html",
-        "categories": [
+        title: "Paladone Playstation PS5 Icons Light PS5 - PP7918PSV2",
+        price: 1995,
+        availability: true,
+        image: "https://gameone.ph/media/catalog/product/cache/d378a0f20f83637cdb1392af8dc032a2/p/l/playstation_icons_light_ps5.jpg",
+        description: "LIGHT THE NIGHT- Light up your bedroom with the iconic symbols from the hugely popular PlayStation gaming system. The PlayStation 5 Icon Light illuminates the dark with a soft glow that phases from white to blue\nCONVERSATION STARTER- When hosting your next party or game night at your home, get everyone talking about your iconic, stylish PS5 Icons Light. Instantly recognizable, everyone will want one\nPERFECT PRESENT- This instantly recognizable PlayStation Icon Light makes a great present for geeks and fans of the popular gaming system. Perfect as a unique stocking stuffer or birthday present\nFUN GIFTS FOR FUN PEOPLE- For those looking for cool stuff and all things geek, crazy, and unique, we are proud to create top selling toys, mugs, collectibles, and presents that make people smile\nOFFICIALLY LICENSED MERCHANDISE- This cool collectible is a unique addition to any fan's set. Give this collector's item to men, women, fans, kids, boys, and girls who love pop culture fun",
+        sku: "5055964766474",
+        url: "https://gameone.ph/paladone-playstation-ps5-icons-light-ps5-pp7918psv2.html",
+        categories: [
             "PlayStation",
             "Others"
         ]
     },
     {
-        "title": "Paladone Playstation Icon Light - PP7929PS",
-        "price": 1095,
-        "availability": true,
-        "image": "https://gameone.ph/media/catalog/product/cache/d378a0f20f83637cdb1392af8dc032a2/p/l/playstation_icon_light.jpg",
-        "description": "The PlayStation Icon Light stands 10cm (4 inches) tall and is powered by 2x AAA batteries (not included) giving you total flexibility to place the light anywhere in your home. The main body illuminates blue, in homage to the lighting used on the PS5 and the icons themselves glow white to match the shell of the PlayStation 5 console. The light sits on top of a black base decorated with the PlayStation logo.\nDecorative and practical, this officially licensed PlayStation Icon Light will make a great addition to any gamer's living space. The light makes the perfect gift for any PlayStation devotee or gamer, whatever the occasion.\nNO LIMIT LIGHT- Powered by 2x AAA batteries (not included), this can be placed anywhere around your home. The perfect accompaniment to your gaming that will look great in any bedroom, gaming den, or living space.\nICONIC SYMBOLS- The light features the four controller button symbols (triangle, circle, cross, square), with the PlayStation logo on the black base. Standing 10cm (4 inches) tall, it glows blue when lit with the symbols highlighted in white.\nPRACTICAL & COLLECTABLE- PlayStation has been part of our lives since 1994. This PlayStation Icon Light makes the perfect present to give to any PlayStation fan, gamer, or merchandise collector.\nOFFICIAL MERCHANDISE-A great light for all PlayStation fans and gamers, this PlayStation Icon Light is officially licensed and approved by Sony.",
-        "sku": "5055964766580",
-        "url": "https://gameone.ph/paladone-playstation-icon-light-pp7929ps.html",
-        "categories": [
+        title: "Paladone Playstation Icon Light - PP7929PS",
+        price: 1095,
+        availability: true,
+        image: "https://gameone.ph/media/catalog/product/cache/d378a0f20f83637cdb1392af8dc032a2/p/l/playstation_icon_light.jpg",
+        description: "The PlayStation Icon Light stands 10cm (4 inches) tall and is powered by 2x AAA batteries (not included) giving you total flexibility to place the light anywhere in your home. The main body illuminates blue, in homage to the lighting used on the PS5 and the icons themselves glow white to match the shell of the PlayStation 5 console. The light sits on top of a black base decorated with the PlayStation logo.\nDecorative and practical, this officially licensed PlayStation Icon Light will make a great addition to any gamer's living space. The light makes the perfect gift for any PlayStation devotee or gamer, whatever the occasion.\nNO LIMIT LIGHT- Powered by 2x AAA batteries (not included), this can be placed anywhere around your home. The perfect accompaniment to your gaming that will look great in any bedroom, gaming den, or living space.\nICONIC SYMBOLS- The light features the four controller button symbols (triangle, circle, cross, square), with the PlayStation logo on the black base. Standing 10cm (4 inches) tall, it glows blue when lit with the symbols highlighted in white.\nPRACTICAL & COLLECTABLE- PlayStation has been part of our lives since 1994. This PlayStation Icon Light makes the perfect present to give to any PlayStation fan, gamer, or merchandise collector.\nOFFICIAL MERCHANDISE-A great light for all PlayStation fans and gamers, this PlayStation Icon Light is officially licensed and approved by Sony.",
+        sku: "5055964766580",
+        url: "https://gameone.ph/paladone-playstation-icon-light-pp7929ps.html",
+        categories: [
             "PlayStation",
             "Others"
         ]
     },
     {
-        "title": "Paladone Playstation 5th Gen Icons Desk Mat - PP8816PS",
-        "price": 1195,
-        "availability": true,
-        "image": "https://gameone.ph/media/catalog/product/cache/d378a0f20f83637cdb1392af8dc032a2/9/_/9_4_65.jpg",
-        "description": "PLAYSTATION 5TH GEN- This mat brings to life the newest PlayStation and brings it to your very own office or gaming space. It was designed with the newest PlayStation icons, incorporating your favorite sleek graphics to your space\nDIMENSIONS- Measuring 79cm (31in) by 30cm (11.75in), this desk mat has room for the mouse, keyboard, your phone, or even a laptop! It is perfect to limit scratches or coffee stains on your desk\nNON-SLIP BASE- The non-slip base on this mat allows for ultra smooth movement for your mouse so you can work on whatever project or game that has most recently caught your attention effectively and efficiently\nUP YOUR DESK GAME- The cool, sleek style of the PS5 has been incorporated into the design of this desk mat that will elevate the style of your office, desk, or work area. Show off to your friends and family with this new gaming style mat\nPRACTICAL & COLLECTABLE- For those looking for cool stuff and all things geek, crazy, and unique, The PlayStation 5th Generation Icons Desk Mat comes supplied in a full color gift box and makes the perfect present for any PlayStation fan or gamer",
-        "sku": "5055964776268",
-        "url": "https://gameone.ph/paladone-playstation-5th-gen-icons-desk-mat-pp8816ps.html",
-        "categories": [
+        title: "Paladone Playstation 5th Gen Icons Desk Mat - PP8816PS",
+        price: 1195,
+        availability: true,
+        image: "https://gameone.ph/media/catalog/product/cache/d378a0f20f83637cdb1392af8dc032a2/9/_/9_4_65.jpg",
+        description: "PLAYSTATION 5TH GEN- This mat brings to life the newest PlayStation and brings it to your very own office or gaming space. It was designed with the newest PlayStation icons, incorporating your favorite sleek graphics to your space\nDIMENSIONS- Measuring 79cm (31in) by 30cm (11.75in), this desk mat has room for the mouse, keyboard, your phone, or even a laptop! It is perfect to limit scratches or coffee stains on your desk\nNON-SLIP BASE- The non-slip base on this mat allows for ultra smooth movement for your mouse so you can work on whatever project or game that has most recently caught your attention effectively and efficiently\nUP YOUR DESK GAME- The cool, sleek style of the PS5 has been incorporated into the design of this desk mat that will elevate the style of your office, desk, or work area. Show off to your friends and family with this new gaming style mat\nPRACTICAL & COLLECTABLE- For those looking for cool stuff and all things geek, crazy, and unique, The PlayStation 5th Generation Icons Desk Mat comes supplied in a full color gift box and makes the perfect present for any PlayStation fan or gamer",
+        sku: "5055964776268",
+        url: "https://gameone.ph/paladone-playstation-5th-gen-icons-desk-mat-pp8816ps.html",
+        categories: [
             "PlayStation",
             "Others"
         ]
     },
     {
-        "title": "Paladone Marvel Logo Light V2 - PP7221MCV2",
-        "price": 1495,
-        "availability": false,
-        "image": "https://gameone.ph/media/catalog/product/cache/d378a0f20f83637cdb1392af8dc032a2/m/a/marvel_logo_light_v2-4.jpg",
-        "description": "ICON LIGHT- Marvel in the light of the instantly recognisable logo of one of the greatest superhero series ever made. It includes 2 light modes: phase on and light pulsing.\nTHE MCU- With an unrivaled cast of characters including Spider-Man, Hulk, Thor, Captain Marvel, and Iron Man among many many others, Marvel continues to gain popularity in its comics and movies.\nLIGHT THE NIGHT- Use this nightlight as a desk lamp on the nightstand by your bed. It's a perfect way to illuminate your man cave, bedroom, baby nursery, toddler's playroom, or themed home theatre.\nOFFICIALLY LICENSED - This quality collectible is a unique addition to any fan's set. Give this cool collector's merchandise to mums, dads, fans, kids, boys, and girls who love pop culture fun.\nORIGINAL GIFTWARE- For those in the fandom looking for novelty items and all things geek, crazy, and unique, we are proud to create top selling toys, mugs, collectibles, and novelties.",
-        "sku": "5055964756123",
-        "url": "https://gameone.ph/paladone-marvel-logo-light-v2-pp7221mcv2.html",
-        "categories": [
+        title: "Paladone Marvel Logo Light V2 - PP7221MCV2",
+        price: 1495,
+        availability: false,
+        image: "https://gameone.ph/media/catalog/product/cache/d378a0f20f83637cdb1392af8dc032a2/m/a/marvel_logo_light_v2-4.jpg",
+        description: "ICON LIGHT- Marvel in the light of the instantly recognisable logo of one of the greatest superhero series ever made. It includes 2 light modes: phase on and light pulsing.\nTHE MCU- With an unrivaled cast of characters including Spider-Man, Hulk, Thor, Captain Marvel, and Iron Man among many many others, Marvel continues to gain popularity in its comics and movies.\nLIGHT THE NIGHT- Use this nightlight as a desk lamp on the nightstand by your bed. It's a perfect way to illuminate your man cave, bedroom, baby nursery, toddler's playroom, or themed home theatre.\nOFFICIALLY LICENSED - This quality collectible is a unique addition to any fan's set. Give this cool collector's merchandise to mums, dads, fans, kids, boys, and girls who love pop culture fun.\nORIGINAL GIFTWARE- For those in the fandom looking for novelty items and all things geek, crazy, and unique, we are proud to create top selling toys, mugs, collectibles, and novelties.",
+        sku: "5055964756123",
+        url: "https://gameone.ph/paladone-marvel-logo-light-v2-pp7221mcv2.html",
+        categories: [
             "PlayStation",
             "Others"
         ]
     },
     {
-        "title": "Paladone Venom Icon Light V2 - PP6604SPMV2",
-        "price": 1095,
-        "availability": true,
-        "image": "https://gameone.ph/media/catalog/product/cache/d378a0f20f83637cdb1392af8dc032a2/v/e/venom_icon_light_v2-1_1.jpg",
-        "description": "- This 10cm (4\") tall icon light will be loved by the generations of Marvel, Spider-Man, and Venom fans. As well as being a practical LED light, it is also a great piece of memorabilia to add to any collection of Marvel merchandise.\n- Supplied in a branded box, this officially licensed icon light makes a great gift. It is powered by 2x AAA batteries (not included) so you can place the light anywhere in your home, gaming space or brighten up your desk at the office.\n- Constructed from eco-friendly Break Down Plastic so you can buy with the confidence that when your Venom Icon Light comes to the end of its life the plastic will breakdown thanks to a revolutionary organic ingredient and not just sit in landfill.\n- 10cm (4\") tall battery powered collectible 3D light (2x AAA batteries not included). BDP\nThis product is made using BDP which stands for Breakdown Plastic – an organic additive that helps plastic decompose at landfill.",
-        "sku": "5055964742386",
-        "url": "https://gameone.ph/paladone-venom-icon-light-v2-pp6604spmv2.html",
-        "categories": [
+        title: "Paladone Venom Icon Light V2 - PP6604SPMV2",
+        price: 1095,
+        availability: true,
+        image: "https://gameone.ph/media/catalog/product/cache/d378a0f20f83637cdb1392af8dc032a2/v/e/venom_icon_light_v2-1_1.jpg",
+        description: "- This 10cm (4\") tall icon light will be loved by the generations of Marvel, Spider-Man, and Venom fans. As well as being a practical LED light, it is also a great piece of memorabilia to add to any collection of Marvel merchandise.\n- Supplied in a branded box, this officially licensed icon light makes a great gift. It is powered by 2x AAA batteries (not included) so you can place the light anywhere in your home, gaming space or brighten up your desk at the office.\n- Constructed from eco-friendly Break Down Plastic so you can buy with the confidence that when your Venom Icon Light comes to the end of its life the plastic will breakdown thanks to a revolutionary organic ingredient and not just sit in landfill.\n- 10cm (4\") tall battery powered collectible 3D light (2x AAA batteries not included). BDP\nThis product is made using BDP which stands for Breakdown Plastic – an organic additive that helps plastic decompose at landfill.",
+        sku: "5055964742386",
+        url: "https://gameone.ph/paladone-venom-icon-light-v2-pp6604spmv2.html",
+        categories: [
             "PlayStation",
             "Others"
         ]
     },
     {
-        "title": "Paladone Spiderman Icon Light BDP - PP6120SPM",
-        "price": 1095,
-        "availability": true,
-        "image": "https://gameone.ph/media/catalog/product/cache/d378a0f20f83637cdb1392af8dc032a2/s/p/spiderman_icon_light_bdp-1.jpg",
-        "description": "AVENGERS- Get your hands on this fun Spider-Man Icon Light and have your favourite superhero by your bedside at all times to keep you safe and sound.\nPERFECT GIFT- The Spider-Man Icon light is a great gift for comic book fans and lovers of the Marvel Avengers films alike.\nSUSTAINABLE- This product is made using BDP which stands for breakdown plastic - an organic additive that helps plastic decompose at landfill without affecting either its structural integrity or the recyclability.\nUNIQUE & USEFUL- Add a fun new piece of memorabilia to your own collection today. Instantly recognisable and beloved worldwide, this item is a crazy fun accessory to keep or to give.\nOFFICIALLY LICENSED- The Spider-Man Icon Light is an officially licensed Marvel product. 10cm (4) tall battery powered collectible 3D light (2x AAA batteries not included)",
-        "sku": "5055964735340",
-        "url": "https://gameone.ph/paladone-spiderman-icon-light-bdp-pp6120spm.html",
-        "categories": [
+        title: "Paladone Spiderman Icon Light BDP - PP6120SPM",
+        price: 1095,
+        availability: true,
+        image: "https://gameone.ph/media/catalog/product/cache/d378a0f20f83637cdb1392af8dc032a2/s/p/spiderman_icon_light_bdp-1.jpg",
+        description: "AVENGERS- Get your hands on this fun Spider-Man Icon Light and have your favourite superhero by your bedside at all times to keep you safe and sound.\nPERFECT GIFT- The Spider-Man Icon light is a great gift for comic book fans and lovers of the Marvel Avengers films alike.\nSUSTAINABLE- This product is made using BDP which stands for breakdown plastic - an organic additive that helps plastic decompose at landfill without affecting either its structural integrity or the recyclability.\nUNIQUE & USEFUL- Add a fun new piece of memorabilia to your own collection today. Instantly recognisable and beloved worldwide, this item is a crazy fun accessory to keep or to give.\nOFFICIALLY LICENSED- The Spider-Man Icon Light is an officially licensed Marvel product. 10cm (4) tall battery powered collectible 3D light (2x AAA batteries not included)",
+        sku: "5055964735340",
+        url: "https://gameone.ph/paladone-spiderman-icon-light-bdp-pp6120spm.html",
+        categories: [
             "PlayStation",
             "Others"
         ]
     },
     {
-        "title": "Paladone Miles Morales Icon Light - PP6606SPM",
-        "price": 1095,
-        "availability": true,
-        "image": "https://gameone.ph/media/catalog/product/cache/d378a0f20f83637cdb1392af8dc032a2/m/i/miles_morales_icon_light.jpg",
-        "description": "COLLECTABLE & PRACTICAL - By day this superhero that we first met in Ultimate Fallout will sit proudly on your shelf as a sign of your love of all things Marvel Then when it gets dark just flick the switch and let this collectable light come to life with bright white LED light that shines through the eyes.\nUSE ANYWHERE- Standing 11cm (4\") tall and powered by 2x AAA batteries (not included) this light is portable so you can place it anywhere in your home or at work A great addition to any gamers collection of memorabilia.\nBuy with confidence that when your Miles Morales Icon Light comes to the end of its life the plastic will breakdown thanks to a revolutionary organic ingredient and not just sit in landfill.\nOFFICIAL MERCHANDISE - Perfect gift for all Marvel fans superb quality this Miles Morales Icon Light is officially licensed and approved by The Walt Disney Company Limited.",
+        title: "Paladone Miles Morales Icon Light - PP6606SPM",
+        price: 1095,
+        availability: true,
+        image: "https://gameone.ph/media/catalog/product/cache/d378a0f20f83637cdb1392af8dc032a2/m/i/miles_morales_icon_light.jpg",
+        description: "COLLECTABLE & PRACTICAL - By day this superhero that we first met in Ultimate Fallout will sit proudly on your shelf as a sign of your love of all things Marvel Then when it gets dark just flick the switch and let this collectable light come to life with bright white LED light that shines through the eyes.\nUSE ANYWHERE- Standing 11cm (4\") tall and powered by 2x AAA batteries (not included) this light is portable so you can place it anywhere in your home or at work A great addition to any gamers collection of memorabilia.\nBuy with confidence that when your Miles Morales Icon Light comes to the end of its life the plastic will breakdown thanks to a revolutionary organic ingredient and not just sit in landfill.\nOFFICIAL MERCHANDISE - Perfect gift for all Marvel fans superb quality this Miles Morales Icon Light is officially licensed and approved by The Walt Disney Company Limited.",
         sku: "5055964742409",
         url: "https://gameone.ph/paladone-miles-morales-icon-light-pp6606spm.html",
         categories: [

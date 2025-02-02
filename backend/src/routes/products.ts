@@ -162,7 +162,7 @@ export const productRouter = new Elysia({ prefix: '/products' })
       }
     },
     {
-      beforeHandle: [auth, isAdmin],
+      onBeforeHandle: [auth, isAdmin],
       body: t.Object({
         title: t.String(),
         price: t.Number(),
@@ -237,7 +237,7 @@ export const productRouter = new Elysia({ prefix: '/products' })
       }
     },
     {
-      beforeHandle: [auth, isAdmin],
+      onBeforeHandle: [auth, isAdmin],
       detail: {
         tags: ['Products'],
         summary: 'Update product',
@@ -274,7 +274,7 @@ export const productRouter = new Elysia({ prefix: '/products' })
       }
     },
     {
-      beforeHandle: [auth, isAdmin],
+      onBeforeHandle: [auth, isAdmin],
       detail: {
         tags: ['Products'],
         summary: 'Delete product',
