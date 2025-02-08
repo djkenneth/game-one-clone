@@ -2,6 +2,7 @@
 
 import { cors } from '@elysiajs/cors';
 import { jwt } from '@elysiajs/jwt';
+import bearer from '@elysiajs/bearer';
 import { swagger } from '@elysiajs/swagger';
 import { Elysia } from 'elysia';
 import { AppError } from './utils/errors';
@@ -59,6 +60,7 @@ const app = new Elysia()
           { bearerAuth: [] }
         ]
       },
+      exclude: ['/']
     }))
 
     // Global error handler
@@ -98,7 +100,7 @@ const app = new Elysia()
           error: {
             code: 'VALIDATION_ERROR',
             message: 'Validation failed',
-            details: error.errors || error.issues
+            details: error?.errors || error?.issues
           }
         }
       }
@@ -131,7 +133,7 @@ const app = new Elysia()
         origin: process.env.FRONTEND_URL || 'http://localhost:5173',
         credentials: true
     }))
-    // .use(bearer())
+    .use(bearer())
     .use(jwt({
         name: 'jwt',
         secret: process.env.JWT_SECRET!

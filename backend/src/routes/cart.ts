@@ -1,28 +1,7 @@
 import { Elysia, t } from 'elysia'
 import { prisma } from '../index'
 import { auth } from '../plugins/auth'
-import { NotFoundError } from '../utils/errors'
-
-// Response Types
-const CartItemType = t.Object({
-  id: t.Number(),
-  quantity: t.Number(),
-  product: t.Object({
-    id: t.Number(),
-    title: t.String(),
-    price: t.Number(),
-    image: t.String(),
-    availability: t.Boolean()
-  })
-})
-
-const CartResponseType = t.Object({
-  success: t.Boolean(),
-  data: t.Object({
-    items: t.Array(CartItemType),
-    total: t.Number()
-  })
-})
+import { BadRequestError, NotFoundError } from '../utils/errors'
 
 export const cartRouter = new Elysia({ prefix: '/cart' })
   .use(auth)
@@ -52,20 +31,7 @@ export const cartRouter = new Elysia({ prefix: '/cart' })
         tags: ['Cart'],
         summary: 'Get cart',
         description: 'Retrieve current user\'s shopping cart',
-        security: [{ bearerAuth: [] }],
-        responses: {
-          200: {
-            description: 'Cart retrieved successfully',
-            content: {
-              'application/json': {
-                schema: CartResponseType
-              }
-            }
-          },
-          401: {
-            description: 'Unauthorized'
-          }
-        }
+        security: [{ bearerAuth: [] }]
       }
     }
   )
@@ -128,31 +94,7 @@ export const cartRouter = new Elysia({ prefix: '/cart' })
         tags: ['Cart'],
         summary: 'Add to cart',
         description: 'Add a product to shopping cart',
-        security: [{ bearerAuth: [] }],
-        responses: {
-          200: {
-            description: 'Product added to cart successfully',
-            content: {
-              'application/json': {
-                schema: t.Object({
-                  success: t.Boolean(),
-                  data: t.Object({
-                    cartItem: CartItemType
-                  })
-                })
-              }
-            }
-          },
-          400: {
-            description: 'Product not available'
-          },
-          401: {
-            description: 'Unauthorized'
-          },
-          404: {
-            description: 'Product not found'
-          }
-        }
+        security: [{ bearerAuth: [] }]
       }
     }
   )
@@ -189,28 +131,7 @@ export const cartRouter = new Elysia({ prefix: '/cart' })
         tags: ['Cart'],
         summary: 'Update cart item',
         description: 'Update quantity of a cart item',
-        security: [{ bearerAuth: [] }],
-        responses: {
-          200: {
-            description: 'Cart item updated successfully',
-            content: {
-              'application/json': {
-                schema: t.Object({
-                  success: t.Boolean(),
-                  data: t.Object({
-                    cartItem: CartItemType
-                  })
-                })
-              }
-            }
-          },
-          401: {
-            description: 'Unauthorized'
-          },
-          404: {
-            description: 'Cart item not found'
-          }
-        }
+        security: [{ bearerAuth: [] }]
       }
     }
   )
@@ -242,26 +163,7 @@ export const cartRouter = new Elysia({ prefix: '/cart' })
         tags: ['Cart'],
         summary: 'Remove from cart',
         description: 'Remove an item from shopping cart',
-        security: [{ bearerAuth: [] }],
-        responses: {
-          200: {
-            description: 'Item removed successfully',
-            content: {
-              'application/json': {
-                schema: t.Object({
-                  success: t.Boolean(),
-                  message: t.String()
-                })
-              }
-            }
-          },
-          401: {
-            description: 'Unauthorized'
-          },
-          404: {
-            description: 'Cart item not found'
-          }
-        }
+        security: [{ bearerAuth: [] }]
       }
     }
   )

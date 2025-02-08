@@ -12,39 +12,12 @@ const OrderStatusType = t.Enum({
   CANCELLED: 'CANCELLED'
 })
 
-const OrderProductType = t.Object({
-  id: t.Number(),
-  quantity: t.Number(),
-  product: t.Object({
-    id: t.Number(),
-    title: t.String(),
-    price: t.Number(),
-    image: t.String()
-  })
-})
-
-const OrderEventType = t.Object({
-  id: t.Number(),
-  status: OrderStatusType,
-  createdAt: t.String()
-})
-
-const OrderType = t.Object({
-  id: t.Number(),
-  netAmount: t.Number(),
-  status: OrderStatusType,
-  address: t.String(),
-  products: t.Array(OrderProductType),
-  events: t.Array(OrderEventType),
-  createdAt: t.String(),
-  updatedAt: t.String()
-})
 
 export const orderRouter = new Elysia({ prefix: '/orders' })
   .use(auth)
 
  // Admin Routes
- .group('/admin', app => app
+  .group('/admin', app => app
   .onBeforeHandle([isAdmin])
   
   .get('/orders',
@@ -97,40 +70,7 @@ export const orderRouter = new Elysia({ prefix: '/orders' })
         tags: ['Orders (Admin)'],
         summary: 'List all orders',
         description: 'Admin endpoint to list all orders with optional status filter',
-        security: [{ bearerAuth: [] }],
-        responses: {
-          200: {
-            description: 'Orders retrieved successfully',
-            content: {
-              'application/json': {
-                schema: t.Object({
-                  success: t.Boolean(),
-                  data: t.Object({
-                    orders: t.Array(t.Intersect([
-                      OrderType,
-                      t.Object({
-                        user: t.Object({
-                          id: t.Number(),
-                          name: t.String(),
-                          email: t.String()
-                        })
-                      })
-                    ])),
-                    total: t.Number(),
-                    page: t.Number(),
-                    pageSize: t.Number()
-                  })
-                })
-              }
-            }
-          },
-          401: {
-            description: 'Unauthorized'
-          },
-          403: {
-            description: 'Forbidden - Admin only'
-          }
-        }
+        security: [{ bearerAuth: [] }]
       }
     }
   )
@@ -180,34 +120,7 @@ export const orderRouter = new Elysia({ prefix: '/orders' })
         tags: ['Orders (Admin)'],
         summary: 'Update order status',
         description: 'Admin endpoint to update order status',
-        security: [{ bearerAuth: [] }],
-        responses: {
-          200: {
-            description: 'Order status updated successfully',
-            content: {
-              'application/json': {
-                schema: t.Object({
-                  success: t.Boolean(),
-                  data: t.Object({
-                    order: OrderType
-                  })
-                })
-              }
-            }
-          },
-          400: {
-            description: 'Invalid status update'
-          },
-          401: {
-            description: 'Unauthorized'
-          },
-          403: {
-            description: 'Forbidden - Admin only'
-          },
-          404: {
-            description: 'Order not found'
-          }
-        }
+        security: [{ bearerAuth: [] }]
       }
     }
   )
@@ -254,31 +167,7 @@ export const orderRouter = new Elysia({ prefix: '/orders' })
         tags: ['Orders (Admin)'],
         summary: 'List user orders',
         description: 'Admin endpoint to list all orders for a specific user',
-        security: [{ bearerAuth: [] }],
-        responses: {
-          200: {
-            description: 'Orders retrieved successfully',
-            content: {
-              'application/json': {
-                schema: t.Object({
-                  success: t.Boolean(),
-                  data: t.Object({
-                    orders: t.Array(OrderType),
-                    total: t.Number(),
-                    page: t.Number(),
-                    pageSize: t.Number()
-                  })
-                })
-              }
-            }
-          },
-          401: {
-            description: 'Unauthorized'
-          },
-          403: {
-            description: 'Forbidden - Admin only'
-          }
-        }
+        security: [{ bearerAuth: [] }]
       }
     }
   )

@@ -1,42 +1,86 @@
-// src/routes/users.ts
-
 import { Elysia, t } from 'elysia'
 import { prisma } from '../index'
 import { auth, isAdmin } from '../plugins/auth'
-import { AddressSchema, ProfileSchema, UpdateUserSchema } from '../schema/users'
+import { UpdateUserSchema } from '../schema/users'
 import { BadRequestError, NotFoundError } from '../utils/errors'
+
+// Response Types
+const AddressType = t.Object({
+  id: t.Number(),
+  lineOne: t.String(),
+  lineTwo: t.Optional(t.String()),
+  city: t.String(),
+  country: t.String(),
+  pincode: t.String()
+})
+
+const ProfileType = t.Object({
+  id: t.Number(),
+  firstName: t.String(),
+  middleName: t.Optional(t.String()),
+  lastName: t.String(),
+  birthDate: t.String(),
+  age: t.Number(),
+  profilePicture: t.Optional(t.String())
+})
+
+const UpdateUsersType = t.Object({
+    name: t.Optional(t.String()),
+    defaultShippingAddress: t.Optional(t.String()),
+    defaultBillingAddress: t.Optional(t.String()),
+})
 
 export const userRouter = new Elysia({ prefix: '/users' })
   .use(auth)
 
   // Address routes
   .group('/address', app => app
-    // Create address
     .post('/',
       async ({ body, user }) => {
         const address = await prisma.address.create({
           data: {
-            ...AddressSchema.parse(body),
+            ...AddressType.parse(body),
             userId: user.id
           }
         })
 
-        return { address }
+        return {
+          success: true,
+          data: { address }
+        }
+      },
+      {
+        body: AddressType,
+        detail: {
+          tags: ['Address Management'],
+          summary: 'Create new address',
+          description: 'Add a new address to user profile',
+          security: [{ bearerAuth: [] }]
+        }
       }
     )
 
-    // List addresses
     .get('/',
       async ({ user }) => {
         const addresses = await prisma.address.findMany({
           where: { userId: user.id }
         })
 
-        return { addresses }
+        return {
+          success: true,
+          data: { addresses }
+        }
+      },
+      {
+        detail: {
+          tags: ['Address Management'],
+          summary: 'List user addresses',
+          description: 'Get all addresses associated with the user',
+          security: [{ bearerAuth: [] }],
+        }
       }
     )
 
-    // Delete address
     .delete('/:id',
       async ({ params: { id }, user }) => {
         try {
@@ -55,9 +99,20 @@ export const userRouter = new Elysia({ prefix: '/users' })
             where: { id: parseInt(id) }
           })
 
-          return { success: true }
+          return {
+            success: true,
+            message: 'Address deleted successfully'
+          }
         } catch (error) {
           throw new NotFoundError('Address not found')
+        }
+      },
+      {
+        detail: {
+          tags: ['Address Management'],
+          summary: 'Delete address',
+          description: 'Remove an address from user profile',
+          security: [{ bearerAuth: [] }]
         }
       }
     )
@@ -65,21 +120,31 @@ export const userRouter = new Elysia({ prefix: '/users' })
 
   // Profile routes
   .group('/profile', app => app
-    // Create profile
     .post('/',
       async ({ body, user }) => {
         const profile = await prisma.profile.create({
           data: {
-            ...ProfileSchema.parse(body),
+            ...ProfileType.parse(body),
             userId: user.id
           }
         })
 
-        return { profile }
+        return {
+          success: true,
+          data: { profile }
+        }
+      },
+      {
+        body: ProfileType,
+        detail: {
+          tags: ['Profile Management'],
+          summary: 'Create user profile',
+          description: 'Create a new profile for the user',
+          security: [{ bearerAuth: [] }]
+        }
       }
     )
 
-    // Get profile
     .get('/',
       async ({ user }) => {
         const profile = await prisma.profile.findUnique({
@@ -90,28 +155,50 @@ export const userRouter = new Elysia({ prefix: '/users' })
           throw new NotFoundError('Profile not found')
         }
 
-        return { profile }
+        return {
+          success: true,
+          data: { profile }
+        }
+      },
+      {
+        detail: {
+          tags: ['Profile Management'],
+          summary: 'Get user profile',
+          description: 'Retrieve user profile information',
+          security: [{ bearerAuth: [] }]
+        }
       }
     )
 
-    // Update profile
     .put('/',
       async ({ body, user }) => {
         try {
           const profile = await prisma.profile.update({
             where: { userId: user.id },
-            data: ProfileSchema.parse(body)
+            data: ProfileType.parse(body)
           })
 
-          return { profile }
+          return {
+            success: true,
+            data: { profile }
+          }
         } catch (error) {
           throw new NotFoundError('Profile not found')
+        }
+      },
+      {
+        body: ProfileType,
+        detail: {
+          tags: ['Profile Management'],
+          summary: 'Update user profile',
+          description: 'Update existing user profile information',
+          security: [{ bearerAuth: [] }]
         }
       }
     )
   )
 
-  // Update user
+  // User settings
   .put('/',
     async ({ body, user }) => {
       const data = UpdateUserSchema.parse(body)
@@ -147,7 +234,19 @@ export const userRouter = new Elysia({ prefix: '/users' })
         data
       })
 
-      return { user: updatedUser }
+      return {
+        success: true,
+        data: { user: updatedUser }
+      }
+    },
+    {
+      body: UpdateUsersType,
+      detail: {
+        tags: ['User Settings'],
+        summary: 'Update user settings',
+        description: 'Update user preferences and default addresses',
+        security: [{ bearerAuth: [] }]
+      }
     }
   )
 
@@ -155,7 +254,6 @@ export const userRouter = new Elysia({ prefix: '/users' })
   .group('/admin', app => app
     .onBeforeHandle(isAdmin)
 
-    // List users
     .get('/',
       async ({ query }) => {
         const { skip = '0', take = '10' } = query
@@ -175,15 +273,29 @@ export const userRouter = new Elysia({ prefix: '/users' })
         const total = await prisma.user.count()
 
         return { 
-          users,
-          total,
-          page: Math.floor(parseInt(skip as string) / parseInt(take as string)) + 1,
-          pageSize: parseInt(take as string)
+          success: true,
+          data: {
+            users,
+            total,
+            page: Math.floor(parseInt(skip as string) / parseInt(take as string)) + 1,
+            pageSize: parseInt(take as string)
+          }
+        }
+      },
+      {
+        query: t.Object({
+          skip: t.Optional(t.String()),
+          take: t.Optional(t.String())
+        }),
+        detail: {
+          tags: ['User Management (Admin)'],
+          summary: 'List all users',
+          description: 'Admin endpoint to list all users with pagination',
+          security: [{ bearerAuth: [] }]
         }
       }
     )
 
-    // Get user by ID
     .get('/:id',
       async ({ params: { id } }) => {
         const user = await prisma.user.findUnique({
@@ -198,11 +310,21 @@ export const userRouter = new Elysia({ prefix: '/users' })
           throw new NotFoundError('User not found')
         }
 
-        return { user }
+        return {
+          success: true,
+          data: { user }
+        }
+      },
+      {
+        detail: {
+          tags: ['User Management (Admin)'],
+          summary: 'Get user details',
+          description: 'Admin endpoint to get detailed user information',
+          security: [{ bearerAuth: [] }]
+        }
       }
     )
 
-    // Change user role
     .put('/:id/role',
       async ({ params: { id }, body }) => {
         try {
@@ -213,7 +335,10 @@ export const userRouter = new Elysia({ prefix: '/users' })
             }
           })
 
-          return { user }
+          return {
+            success: true,
+            data: { user }
+          }
         } catch (error) {
           throw new NotFoundError('User not found')
         }
@@ -221,7 +346,13 @@ export const userRouter = new Elysia({ prefix: '/users' })
       {
         body: t.Object({
           role: t.Enum({ ADMIN: 'ADMIN', USER: 'USER' })
-        })
+        }),
+        detail: {
+          tags: ['User Management (Admin)'],
+          summary: 'Change user role',
+          description: 'Admin endpoint to update user role',
+          security: [{ bearerAuth: [] }]
+        }
       }
     )
   )

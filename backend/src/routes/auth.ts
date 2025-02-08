@@ -7,22 +7,6 @@ import { BadRequestError, UnauthorizedError } from '../utils/errors'
 
 const SALT_ROUNDS = 10
 
-// Response Types
-const UserResponseType = t.Object({
-  id: t.Number(),
-  email: t.String(),
-  name: t.String(),
-  role: t.String()
-})
-
-const AuthResponseType = t.Object({
-  success: t.Boolean(),
-  data: t.Object({
-    accessToken: t.String(),
-    user: UserResponseType
-  })
-})
-
 export const authRouter = new Elysia({ prefix: '/auth' })
   // Signup
   .post('/signup', 
@@ -65,27 +49,7 @@ export const authRouter = new Elysia({ prefix: '/auth' })
       detail: {
         tags: ['Authentication'],
         summary: 'Register a new user',
-        description: 'Create a new user account with email and password',
-        responses: {
-          200: {
-            description: 'User successfully created',
-            content: {
-              'application/json': {
-                schema: t.Object({
-                  success: t.Boolean(),
-                  data: t.Object({
-                    id: t.Number(),
-                    email: t.String(),
-                    name: t.String()
-                  })
-                })
-              }
-            }
-          },
-          400: {
-            description: 'Bad request - User already exists or invalid input'
-          }
-        }
+        description: 'Create a new user account with email and password'
       }
     }
   )
@@ -129,19 +93,6 @@ export const authRouter = new Elysia({ prefix: '/auth' })
         tags: ['Authentication'],
         summary: 'User login',
         description: 'Authenticate a user and receive a JWT token',
-        responses: {
-          200: {
-            description: 'Successfully authenticated',
-            content: {
-              'application/json': {
-                schema: AuthResponseType
-              }
-            }
-          },
-          401: {
-            description: 'Invalid credentials'
-          }
-        }
       }
     }
   )
@@ -157,25 +108,7 @@ export const authRouter = new Elysia({ prefix: '/auth' })
         tags: ['Authentication'],
         summary: 'Get user profile',
         description: 'Get the profile of the currently authenticated user',
-        security: [{ bearerAuth: [] }],
-        responses: {
-          200: {
-            description: 'User profile retrieved successfully',
-            content: {
-              'application/json': {
-                schema: t.Object({
-                  success: t.Boolean(),
-                  data: t.Object({
-                    user: UserResponseType
-                  })
-                })
-              }
-            }
-          },
-          401: {
-            description: 'Unauthorized - Invalid or missing token'
-          }
-        }
+        security: [{ bearerAuth: [] }]
       }
     }
   )

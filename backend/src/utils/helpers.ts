@@ -119,6 +119,7 @@ export const generateSlug = (text: string): string => {
    */
   export const removeEmptyValues = <T extends object>(obj: T): Partial<T> => {
     return Object.fromEntries(
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       Object.entries(obj).filter(([_, value]) => value != null)
     ) as Partial<T>
   }
