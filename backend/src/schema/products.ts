@@ -1,3 +1,5 @@
+// src/schema/products.ts
+
 import { z } from 'zod'
 
 export const createProductSchema = z.object({

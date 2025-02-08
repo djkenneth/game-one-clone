@@ -1,9 +1,11 @@
+// src/routes/orders.ts
+
 import { Router } from 'express';
 
 import { cancelOrder, changeStatus, createOrder, getOrderById, listAllOrders, listOrder, listUserOrders } from '../controllers/orders';
 import { errorHandler } from '../error-handler';
-import authMiddleware from '../middlewares/auth';
 import adminMiddleware from '../middlewares/admin';
+import authMiddleware from '../middlewares/auth';
 
 const orderRouter: Router = Router();
 

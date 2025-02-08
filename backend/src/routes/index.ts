@@ -1,9 +1,11 @@
+// src/routes/index.ts
+
 import { Router } from 'express';
 import authRouter from './auth';
-import productRouter from './products';
-import userRouter from './users';
 import cartRouter from './cart';
 import orderRouter from './orders';
+import productRouter from './products';
+import userRouter from './users';
 
 const rootRouter = Router();
 

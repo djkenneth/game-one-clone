@@ -1,3 +1,5 @@
+// src/routes/auth.ts
+
 import { Router } from 'express';
 import { login, me, refreshToken, signup } from '../controllers/auth';
 import { errorHandler } from '../error-handler';

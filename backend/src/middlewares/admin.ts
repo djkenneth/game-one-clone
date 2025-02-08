@@ -1,6 +1,8 @@
+// src/middlewares/admin.ts
+
 import { NextFunction, Request, Response } from "express";
-import { UnauthorizedException } from "../exceptions/unauthorized";
 import { ErrorCode } from "../exceptions/root";
+import { UnauthorizedException } from "../exceptions/unauthorized";
 
 const adminMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user

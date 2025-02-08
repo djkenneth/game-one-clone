@@ -1,3 +1,5 @@
+// src/exceptions/not-found.ts
+
 import { ErrorCode, HttpException } from "./root";
 
 export class NotFoundException extends HttpException {

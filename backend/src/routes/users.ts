@@ -1,8 +1,10 @@
+// src/routes/users.ts
+
 import { Router } from 'express';
-import { errorHandler } from '../error-handler';
 import { changeUserRole, createAddress, createProfile, deleteAddress, getProfile, getUserById, listAddress, listUsers, updateProfile, updateUser } from '../controllers/users';
-import authMiddleware from '../middlewares/auth';
+import { errorHandler } from '../error-handler';
 import adminMiddleware from '../middlewares/admin';
+import authMiddleware from '../middlewares/auth';
 
 const userRouter = Router();
 userRouter.post('/address', [authMiddleware], errorHandler(createAddress));
