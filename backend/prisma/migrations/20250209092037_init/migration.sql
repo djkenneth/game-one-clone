@@ -128,7 +128,9 @@ CREATE TABLE "order_events" (
 -- CreateTable
 CREATE TABLE "_ProductCategories" (
     "A" INTEGER NOT NULL,
-    "B" INTEGER NOT NULL
+    "B" INTEGER NOT NULL,
+
+    CONSTRAINT "_ProductCategories_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateIndex
@@ -148,9 +150,6 @@ CREATE UNIQUE INDEX "Category_name_key" ON "Category"("name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Category_slug_key" ON "Category"("slug");
-
--- CreateIndex
-CREATE UNIQUE INDEX "_ProductCategories_AB_unique" ON "_ProductCategories"("A", "B");
 
 -- CreateIndex
 CREATE INDEX "_ProductCategories_B_index" ON "_ProductCategories"("B");

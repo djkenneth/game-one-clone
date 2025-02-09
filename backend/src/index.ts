@@ -133,11 +133,11 @@ const app = new Elysia()
         origin: process.env.FRONTEND_URL || 'http://localhost:5173',
         credentials: true
     }))
-    .use(bearer())
     .use(jwt({
-        name: 'jwt',
-        secret: process.env.JWT_SECRET!
-      }))
+      name: 'jwt',
+      secret: process.env.JWT_SECRET!
+    }))
+    .use(bearer())
 
     // Mount routes
     .group('/api', app => app

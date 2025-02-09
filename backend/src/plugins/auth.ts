@@ -3,7 +3,7 @@ import { prisma } from '../index'
 import { UnauthorizedError } from '../utils/errors'
 
 export const auth = new Elysia()
-  .derive(async ({ bearer, jwt, request, set }) => {
+  .derive(async ({ bearer, jwt, request }) => {
     // Skip authentication for public routes
     const publicPaths = [
       '/swagger',

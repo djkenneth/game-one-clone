@@ -72,15 +72,20 @@ export const authRouter = new Elysia({ prefix: '/auth' })
       }
 
       const accessToken = await jwt.sign({ 
-        userId: user.id 
+        userId: user.id,
+        role: user.role
       })
 
       return { 
-        accessToken,
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name
+        success: true,
+        data: {
+          accessToken,
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role
+          }
         }
       }
     },
@@ -99,11 +104,41 @@ export const authRouter = new Elysia({ prefix: '/auth' })
 
   // Profile
   .get('/me',
-    async ({ user }) => {
-      return { user }
+    async ({ bearer, jwt, set }) => {
+      
+      if (!bearer) {
+        set.status = 401
+        throw new UnauthorizedError('No token provided')
+      }
+
+      try {
+        const payload = await jwt.verify(bearer)
+        if (!payload?.userId) {
+          throw new UnauthorizedError('Invalid token')
+        }
+
+        const userWithDetails = await prisma.user.findUnique({
+          where: { id: payload.userId },
+          include: {
+            profile: true,
+            addresses: true
+          }
+        })
+
+        if (!userWithDetails) {
+          throw new UnauthorizedError('User not found')
+        }
+
+        return { 
+          success: true,
+          data: { user: userWithDetails }
+        }
+      } catch (error) {
+        console.error('Auth error:', error)
+        throw new UnauthorizedError('Invalid token')
+      }
     },
     { 
-      onBeforeHandle: [auth],
       detail: {
         tags: ['Authentication'],
         summary: 'Get user profile',
