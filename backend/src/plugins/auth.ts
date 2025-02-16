@@ -1,29 +1,23 @@
-import { Elysia } from 'elysia'
+import { type Elysia } from 'elysia'
 import { prisma } from '../index'
 import { UnauthorizedError } from '../utils/errors'
+import bearer from '@elysiajs/bearer'
+import jwt from '@elysiajs/jwt'
 
-export const auth = new Elysia()
-  .derive(async ({ bearer, jwt, request }) => {
-    // Skip authentication for public routes
-    const publicPaths = [
-      '/swagger',
-      '/docs',
-      '/api/auth/login',
-      '/api/auth/signup',
-      '/'
-    ]
-    
-    const path = new URL(request.url).pathname
-    if (publicPaths.some(publicPath => path.startsWith(publicPath))) {
-      return
-    }
-
+export const auth = (app: Elysia) => app
+  .use(bearer())
+  .use(jwt({
+    name: 'jwt',
+    secret: process.env.JWT_SECRET!
+  }))
+  .derive(async ({ bearer, jwt }) => {
     if (!bearer) {
       throw new UnauthorizedError('No token provided')
     }
 
     try {
       const payload = await jwt.verify(bearer)
+
       if (!payload?.userId) {
         throw new UnauthorizedError('Invalid token')
       }
@@ -42,9 +36,16 @@ export const auth = new Elysia()
     }
   })
 
+// Middleware to check if user is authenticated
+export const isAuth = async ({ user, set }) => {
+  if (!user) {
+    throw new UnauthorizedError('Authentication required')
+  }
+}
+
+// Middleware to check if user is admin
 export const isAdmin = async ({ user, set }) => {
-  if (user.role !== 'ADMIN') {
-    set.status = 403
-    throw new Error('Forbidden: Admin access required')
+  if (!user || user.role !== 'ADMIN') {
+    throw new UnauthorizedError('Admin access required')
   }
 }

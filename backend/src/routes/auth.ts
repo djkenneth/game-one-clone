@@ -1,7 +1,6 @@
 import { compareSync, hashSync } from 'bcrypt'
 import { Elysia, t } from 'elysia'
 import { prisma } from '../index'
-import { auth } from '../plugins/auth'
 import { SignUpSchema } from '../schema/users'
 import { BadRequestError, UnauthorizedError } from '../utils/errors'
 

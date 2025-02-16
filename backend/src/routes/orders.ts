@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia'
 import { prisma } from '../index'
-import { auth, isAdmin } from '../plugins/auth'
+import { isAdmin, auth } from '../plugins/auth'
 import { BadRequestError, NotFoundError } from '../utils/errors'
 
 // Response Types

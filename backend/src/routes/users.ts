@@ -1,258 +1,256 @@
-import { Elysia, t } from 'elysia'
-import { prisma } from '../index'
-import { auth, isAdmin } from '../plugins/auth'
-import { UpdateUserSchema } from '../schema/users'
-import { BadRequestError, NotFoundError } from '../utils/errors'
-
-// Response Types
-const AddressType = t.Object({
-  id: t.Number(),
-  lineOne: t.String(),
-  lineTwo: t.Optional(t.String()),
-  city: t.String(),
-  country: t.String(),
-  pincode: t.String()
-})
-
-const ProfileType = t.Object({
-  id: t.Number(),
-  firstName: t.String(),
-  middleName: t.Optional(t.String()),
-  lastName: t.String(),
-  birthDate: t.String(),
-  age: t.Number(),
-  profilePicture: t.Optional(t.String())
-})
-
-const UpdateUsersType = t.Object({
-    name: t.Optional(t.String()),
-    defaultShippingAddress: t.Optional(t.String()),
-    defaultBillingAddress: t.Optional(t.String()),
-})
+import { Elysia, t } from 'elysia';
+import { prisma } from '../index';
+import { auth, isAuth } from '../plugins/auth';
+import { BadRequestError, NotFoundError, UnauthorizedError } from '../utils/errors';
+import { AddressType, ProfileInputSchema, UpdateUserSchema, UpdateUsersType } from '@/schema/users';
 
 export const userRouter = new Elysia({ prefix: '/users' })
-  .use(auth)
+  // Profile routes
+  .group('/profile', app =>
+    app
+      .use(auth)
+
+      .post(
+        '/',
+        async ({ body, user }) => {
+          console.log('user', user);
+          console.log(body);
+
+          if (!user) {
+            throw new UnauthorizedError('User not authenticated');
+          }
+
+          const profileData = {
+            firstName: body.firstName,
+            middleName: body.middleName,
+            lastName: body.lastName,
+            birthDate: new Date(body.birthDate),
+            age: parseInt(body.age),
+            profilePicture: body.profilePicture,
+            userId: user.id,
+          };
+
+          const profile = await prisma.profile.create({
+            data: profileData,
+          });
+
+          console.log('profile', profile);
+
+          return {
+            success: true,
+            data: { profile },
+          };
+        },
+        {
+          onBeforeHandle: [auth, isAuth],
+          body: ProfileInputSchema,
+          detail: {
+            tags: ['Profile Management'],
+            summary: 'Create user profile',
+            description: 'Create a new profile for the user',
+            security: [{ bearerAuth: [] }],
+          },
+        }
+      )
+
+      .get(
+        '/',
+        async ({ user }) => {
+          const profile = await prisma.profile.findUnique({
+            where: { userId: user.id },
+          });
+
+          if (!profile) {
+            throw new NotFoundError('Profile not found');
+          }
+
+          return {
+            success: true,
+            data: { profile },
+          };
+        },
+        {
+          detail: {
+            tags: ['Profile Management'],
+            summary: 'Get user profile',
+            description: 'Retrieve user profile information',
+            security: [{ bearerAuth: [] }],
+          },
+        }
+      )
+
+      .put(
+        '/',
+        async ({ body, user }) => {
+          try {
+            const profile = await prisma.profile.update({
+              where: { userId: user.id },
+              data: body,
+            });
+
+            return {
+              success: true,
+              data: { profile },
+            };
+          } catch (error) {
+            throw new NotFoundError('Profile not found');
+          }
+        },
+        {
+          body: ProfileInputSchema,
+          detail: {
+            tags: ['Profile Management'],
+            summary: 'Update user profile',
+            description: 'Update existing user profile information',
+            security: [{ bearerAuth: [] }],
+          },
+        }
+      )
+  )
 
   // Address routes
-  .group('/address', app => app
-    .post('/',
-      async ({ body, user }) => {
-        const address = await prisma.address.create({
-          data: {
-            ...AddressType.parse(body),
-            userId: user.id
-          }
-        })
-
-        return {
-          success: true,
-          data: { address }
-        }
-      },
-      {
-        body: AddressType,
-        detail: {
-          tags: ['Address Management'],
-          summary: 'Create new address',
-          description: 'Add a new address to user profile',
-          security: [{ bearerAuth: [] }]
-        }
-      }
-    )
-
-    .get('/',
-      async ({ user }) => {
-        const addresses = await prisma.address.findMany({
-          where: { userId: user.id }
-        })
-
-        return {
-          success: true,
-          data: { addresses }
-        }
-      },
-      {
-        detail: {
-          tags: ['Address Management'],
-          summary: 'List user addresses',
-          description: 'Get all addresses associated with the user',
-          security: [{ bearerAuth: [] }],
-        }
-      }
-    )
-
-    .delete('/:id',
-      async ({ params: { id }, user }) => {
-        try {
-          const address = await prisma.address.findFirst({
-            where: { 
-              id: parseInt(id),
-              userId: user.id
-            }
-          })
-
-          if (!address) {
-            throw new NotFoundError('Address not found')
-          }
-
-          await prisma.address.delete({
-            where: { id: parseInt(id) }
-          })
+  .group('/address', app =>
+    app
+      .post(
+        '/',
+        async ({ body, user }) => {
+          const address = await prisma.address.create({
+            data: {
+              ...AddressType.parse(body),
+              userId: user.id,
+            },
+          });
 
           return {
             success: true,
-            message: 'Address deleted successfully'
-          }
-        } catch (error) {
-          throw new NotFoundError('Address not found')
+            data: { address },
+          };
+        },
+        {
+          body: AddressType,
+          detail: {
+            tags: ['Address Management'],
+            summary: 'Create new address',
+            description: 'Add a new address to user profile',
+            security: [{ bearerAuth: [] }],
+          },
         }
-      },
-      {
-        detail: {
-          tags: ['Address Management'],
-          summary: 'Delete address',
-          description: 'Remove an address from user profile',
-          security: [{ bearerAuth: [] }]
-        }
-      }
-    )
-  )
+      )
 
-  // Profile routes
-  .group('/profile', app => app
-    .post('/',
-      async ({ body, user }) => {
-        const profile = await prisma.profile.create({
-          data: {
-            ...ProfileType.parse(body),
-            userId: user.id
-          }
-        })
-
-        return {
-          success: true,
-          data: { profile }
-        }
-      },
-      {
-        body: ProfileType,
-        detail: {
-          tags: ['Profile Management'],
-          summary: 'Create user profile',
-          description: 'Create a new profile for the user',
-          security: [{ bearerAuth: [] }]
-        }
-      }
-    )
-
-    .get('/',
-      async ({ user }) => {
-        const profile = await prisma.profile.findUnique({
-          where: { userId: user.id }
-        })
-
-        if (!profile) {
-          throw new NotFoundError('Profile not found')
-        }
-
-        return {
-          success: true,
-          data: { profile }
-        }
-      },
-      {
-        detail: {
-          tags: ['Profile Management'],
-          summary: 'Get user profile',
-          description: 'Retrieve user profile information',
-          security: [{ bearerAuth: [] }]
-        }
-      }
-    )
-
-    .put('/',
-      async ({ body, user }) => {
-        try {
-          const profile = await prisma.profile.update({
+      .get(
+        '/',
+        async ({ user }) => {
+          const addresses = await prisma.address.findMany({
             where: { userId: user.id },
-            data: ProfileType.parse(body)
-          })
+          });
 
           return {
             success: true,
-            data: { profile }
+            data: { addresses },
+          };
+        },
+        {
+          detail: {
+            tags: ['Address Management'],
+            summary: 'List user addresses',
+            description: 'Get all addresses associated with the user',
+            security: [{ bearerAuth: [] }],
+          },
+        }
+      )
+
+      .delete(
+        '/:id',
+        async ({ params: { id }, user }) => {
+          try {
+            const address = await prisma.address.findFirst({
+              where: {
+                id: parseInt(id),
+                userId: user.id,
+              },
+            });
+
+            if (!address) {
+              throw new NotFoundError('Address not found');
+            }
+
+            await prisma.address.delete({
+              where: { id: parseInt(id) },
+            });
+
+            return {
+              success: true,
+              message: 'Address deleted successfully',
+            };
+          } catch (error) {
+            throw new NotFoundError('Address not found');
           }
-        } catch (error) {
-          throw new NotFoundError('Profile not found')
+        },
+        {
+          detail: {
+            tags: ['Address Management'],
+            summary: 'Delete address',
+            description: 'Remove an address from user profile',
+            security: [{ bearerAuth: [] }],
+          },
         }
-      },
-      {
-        body: ProfileType,
-        detail: {
-          tags: ['Profile Management'],
-          summary: 'Update user profile',
-          description: 'Update existing user profile information',
-          security: [{ bearerAuth: [] }]
-        }
-      }
-    )
-  )
+      )
 
-  // User settings
-  .put('/',
-    async ({ body, user }) => {
-      const data = UpdateUserSchema.parse(body)
+      .put(
+        '/',
+        async ({ body, user }) => {
+          const data = UpdateUserSchema.parse(body);
 
-      if (data.defaultShippingAddress) {
-        const address = await prisma.address.findFirst({
-          where: { 
-            id: data.defaultShippingAddress,
-            userId: user.id
+          if (data.defaultShippingAddress) {
+            const address = await prisma.address.findFirst({
+              where: {
+                id: data.defaultShippingAddress,
+                userId: user.id,
+              },
+            });
+
+            if (!address) {
+              throw new BadRequestError('Invalid shipping address');
+            }
           }
-        })
 
-        if (!address) {
-          throw new BadRequestError('Invalid shipping address')
-        }
-      }
+          if (data.defaultBillingAddress) {
+            const address = await prisma.address.findFirst({
+              where: {
+                id: data.defaultBillingAddress,
+                userId: user.id,
+              },
+            });
 
-      if (data.defaultBillingAddress) {
-        const address = await prisma.address.findFirst({
-          where: { 
-            id: data.defaultBillingAddress,
-            userId: user.id
+            if (!address) {
+              throw new BadRequestError('Invalid billing address');
+            }
           }
-        })
 
-        if (!address) {
-          throw new BadRequestError('Invalid billing address')
+          const updatedUser = await prisma.user.update({
+            where: { id: user.id },
+            data,
+          });
+
+          return {
+            success: true,
+            data: { user: updatedUser },
+          };
+        },
+        {
+          body: UpdateUsersType,
+          detail: {
+            tags: ['Address Management'],
+            summary: 'Update user settings',
+            description: 'Update user preferences and default addresses',
+            security: [{ bearerAuth: [] }],
+          },
         }
-      }
-
-      const updatedUser = await prisma.user.update({
-        where: { id: user.id },
-        data
-      })
-
-      return {
-        success: true,
-        data: { user: updatedUser }
-      }
-    },
-    {
-      body: UpdateUsersType,
-      detail: {
-        tags: ['User Settings'],
-        summary: 'Update user settings',
-        description: 'Update user preferences and default addresses',
-        security: [{ bearerAuth: [] }]
-      }
-    }
+      )
   )
 
   // Admin routes
   .group('/admin', app => app
-    .onBeforeHandle(isAdmin)
 
     .get('/',
       async ({ query }) => {
@@ -272,7 +270,7 @@ export const userRouter = new Elysia({ prefix: '/users' })
 
         const total = await prisma.user.count()
 
-        return { 
+        return {
           success: true,
           data: {
             users,
@@ -355,4 +353,4 @@ export const userRouter = new Elysia({ prefix: '/users' })
         }
       }
     )
-  )
+  );
