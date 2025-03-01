@@ -15,8 +15,6 @@ import { cartRouter } from './routes/cart';
 import { orderRouter } from './routes/orders';
 import { productRouter } from './routes/products';
 import { userRouter } from './routes/users';
-import { auth } from './plugins/auth';
-
 
 // Initialize Prisma
 export const prisma = new PrismaClient().$extends({
@@ -134,7 +132,7 @@ const app = new Elysia()
     credentials: true
   }))
 
-  .use(auth)
+  // .use(auth)
 
   // Mount routes
   .group('/api', app => app

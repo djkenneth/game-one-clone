@@ -71,6 +71,57 @@ export const productRouter = new Elysia({ prefix: '/products' })
     }
   )
 
+  .get('/search',
+    async ({ query: { q } }) => {
+      if (!q) return { products: [] }
+
+      const searchQuery = q.toString()
+      
+      const products = await prisma.product.findMany({
+        where: {
+          OR: [
+            {
+              title: {
+                contains: searchQuery,
+                mode: 'insensitive'
+              }
+            },
+            {
+              description: {
+                contains: searchQuery,
+                mode: 'insensitive'
+              }
+            },
+            {
+              tags: {
+                contains: searchQuery,
+                mode: 'insensitive'
+              }
+            }
+          ]
+        },
+        include: {
+          categories: true
+        }
+      })
+
+      return {
+        success: true,
+        data: { products }
+      }
+    },
+    {
+      query: t.Object({
+        q: t.String()
+      }),
+      detail: {
+        tags: ['Products'],
+        summary: 'Search products',
+        description: 'Search products by title, description, or tags'
+      }
+    }
+  )
+
   // Create product (admin only)
   .post('/',
     async ({ body }) => {
@@ -186,57 +237,6 @@ export const productRouter = new Elysia({ prefix: '/products' })
         summary: 'Delete product',
         description: 'Delete an existing product (Admin only)',
         security: [{ bearerAuth: [] }]
-      }
-    }
-  )
-
-  .get('/search',
-    async ({ query: { q } }) => {
-      if (!q) return { products: [] }
-
-      const searchQuery = q.toString()
-      
-      const products = await prisma.product.findMany({
-        where: {
-          OR: [
-            {
-              title: {
-                contains: searchQuery,
-                mode: 'insensitive'
-              }
-            },
-            {
-              description: {
-                contains: searchQuery,
-                mode: 'insensitive'
-              }
-            },
-            {
-              tags: {
-                contains: searchQuery,
-                mode: 'insensitive'
-              }
-            }
-          ]
-        },
-        include: {
-          categories: true
-        }
-      })
-
-      return {
-        success: true,
-        data: { products }
-      }
-    },
-    {
-      query: t.Object({
-        q: t.String()
-      }),
-      detail: {
-        tags: ['Products'],
-        summary: 'Search products',
-        description: 'Search products by title, description, or tags'
       }
     }
   )

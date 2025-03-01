@@ -3,6 +3,7 @@ import { Elysia, t } from 'elysia'
 import { prisma } from '../index'
 import { SignUpSchema } from '../schema/users'
 import { BadRequestError, UnauthorizedError } from '../utils/errors'
+import { auth } from '@/plugins/auth'
 
 const SALT_ROUNDS = 10
 
@@ -100,6 +101,8 @@ export const authRouter = new Elysia({ prefix: '/auth' })
       }
     }
   )
+
+  .use(auth)
 
   // Profile
   .get('/me',

@@ -34,7 +34,6 @@ export const ProfileSchema = z.object({
 
 // Response Types
 export const AddressType = t.Object({
-  id: t.Number(),
   lineOne: t.String(),
   lineTwo: t.Optional(t.String()),
   city: t.String(),

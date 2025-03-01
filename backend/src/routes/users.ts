@@ -13,8 +13,6 @@ export const userRouter = new Elysia({ prefix: '/users' })
       .post(
         '/',
         async ({ body, user }) => {
-          console.log('user', user);
-          console.log(body);
 
           if (!user) {
             throw new UnauthorizedError('User not authenticated');
@@ -82,10 +80,25 @@ export const userRouter = new Elysia({ prefix: '/users' })
       .put(
         '/',
         async ({ body, user }) => {
+
           try {
+
+            if (!user) {
+              throw new UnauthorizedError('User not authenticated');
+            }
+
+            const profileData = {
+              firstName: body.firstName,
+              middleName: body.middleName,
+              lastName: body.lastName,
+              birthDate: new Date(body.birthDate),
+              age: parseInt(body.age),
+              profilePicture: body.profilePicture,
+            };
+
             const profile = await prisma.profile.update({
               where: { userId: user.id },
-              data: body,
+              data: profileData,
             });
 
             return {
@@ -114,11 +127,22 @@ export const userRouter = new Elysia({ prefix: '/users' })
       .post(
         '/',
         async ({ body, user }) => {
+
+          if (!user) {
+            throw new UnauthorizedError('User not authenticated');
+          }
+
+          const addressData = {
+            lineOne: body.lineOne,
+            lineTwo: body.lineTwo,
+            city: body.city,
+            country: body.country,
+            pincode: body.pincode,
+            userId: user.id,
+          };
+
           const address = await prisma.address.create({
-            data: {
-              ...AddressType.parse(body),
-              userId: user.id,
-            },
+            data: addressData,
           });
 
           return {
@@ -140,6 +164,11 @@ export const userRouter = new Elysia({ prefix: '/users' })
       .get(
         '/',
         async ({ user }) => {
+
+          if (!user) {
+            throw new UnauthorizedError('User not authenticated');
+          }
+
           const addresses = await prisma.address.findMany({
             where: { userId: user.id },
           });
@@ -163,6 +192,11 @@ export const userRouter = new Elysia({ prefix: '/users' })
         '/:id',
         async ({ params: { id }, user }) => {
           try {
+
+            if (!user) {
+              throw new UnauthorizedError('User not authenticated');
+            }
+
             const address = await prisma.address.findFirst({
               where: {
                 id: parseInt(id),
@@ -199,6 +233,11 @@ export const userRouter = new Elysia({ prefix: '/users' })
       .put(
         '/',
         async ({ body, user }) => {
+
+          if (!user) {
+            throw new UnauthorizedError('User not authenticated');
+          }
+
           const data = UpdateUserSchema.parse(body);
 
           if (data.defaultShippingAddress) {
