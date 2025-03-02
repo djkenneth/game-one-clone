@@ -1,8 +1,8 @@
 import { Elysia, t } from 'elysia';
 import { prisma } from '../index';
 import { auth, isAuth } from '../plugins/auth';
-import { BadRequestError, NotFoundError, UnauthorizedError } from '../utils/errors';
-import { AddressType, ProfileInputSchema, UpdateUserSchema, UpdateUsersType } from '@/schema/users';
+import { NotFoundError, UnauthorizedError } from '../utils/errors';
+import { AddressType, ProfileInputSchema } from '@/schema/users';
 
 export const userRouter = new Elysia({ prefix: '/users' })
   // Profile routes
@@ -13,7 +13,6 @@ export const userRouter = new Elysia({ prefix: '/users' })
       .post(
         '/',
         async ({ body, user }) => {
-
           if (!user) {
             throw new UnauthorizedError('User not authenticated');
           }
@@ -80,9 +79,7 @@ export const userRouter = new Elysia({ prefix: '/users' })
       .put(
         '/',
         async ({ body, user }) => {
-
           try {
-
             if (!user) {
               throw new UnauthorizedError('User not authenticated');
             }
@@ -164,7 +161,6 @@ export const userRouter = new Elysia({ prefix: '/users' })
       .get(
         '/',
         async ({ user }) => {
-
           if (!user) {
             throw new UnauthorizedError('User not authenticated');
           }
@@ -192,7 +188,6 @@ export const userRouter = new Elysia({ prefix: '/users' })
         '/:id',
         async ({ params: { id }, user }) => {
           try {
-
             if (!user) {
               throw new UnauthorizedError('User not authenticated');
             }
@@ -231,57 +226,57 @@ export const userRouter = new Elysia({ prefix: '/users' })
       )
 
       .put(
-        '/',
-        async ({ body, user }) => {
+        '/:id',
+        async ({ params: { id }, body, user }) => {
 
           if (!user) {
             throw new UnauthorizedError('User not authenticated');
           }
 
-          const data = UpdateUserSchema.parse(body);
-
-          if (data.defaultShippingAddress) {
+          try {
+            // Check if address belongs to user
             const address = await prisma.address.findFirst({
               where: {
-                id: data.defaultShippingAddress,
+                id: parseInt(id),
                 userId: user.id,
               },
             });
 
             if (!address) {
-              throw new BadRequestError('Invalid shipping address');
+              throw new NotFoundError('Address not found');
             }
-          }
 
-          if (data.defaultBillingAddress) {
-            const address = await prisma.address.findFirst({
-              where: {
-                id: data.defaultBillingAddress,
-                userId: user.id,
-              },
+            const addressData = {
+              lineOne: body.lineOne,
+              lineTwo: body.lineTwo,
+              city: body.city,
+              country: body.country,
+              pincode: body.pincode,
+            };
+
+            // Update address
+            const updatedAddress = await prisma.address.update({
+              where: { id: parseInt(id) },
+              data: addressData
             });
 
-            if (!address) {
-              throw new BadRequestError('Invalid billing address');
+            return {
+              success: true,
+              data: { address: updatedAddress },
+            };
+          } catch (error) {
+            if (error instanceof NotFoundError) {
+              throw error;
             }
+            throw new NotFoundError('Address not found');
           }
-
-          const updatedUser = await prisma.user.update({
-            where: { id: user.id },
-            data,
-          });
-
-          return {
-            success: true,
-            data: { user: updatedUser },
-          };
         },
         {
-          body: UpdateUsersType,
+          body: AddressType,
           detail: {
             tags: ['Address Management'],
-            summary: 'Update user settings',
-            description: 'Update user preferences and default addresses',
+            summary: 'Update address',
+            description: 'Update an existing address for the user',
             security: [{ bearerAuth: [] }],
           },
         }
@@ -289,107 +284,111 @@ export const userRouter = new Elysia({ prefix: '/users' })
   )
 
   // Admin routes
-  .group('/admin', app => app
+  .group('/admin', app =>
+    app
 
-    .get('/',
-      async ({ query }) => {
-        const { skip = '0', take = '10' } = query
+      .get(
+        '/',
+        async ({ query }) => {
+          const { skip = '0', take = '10' } = query;
 
-        const users = await prisma.user.findMany({
-          skip: parseInt(skip as string),
-          take: parseInt(take as string),
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
-            createdAt: true
-          }
-        })
+          const users = await prisma.user.findMany({
+            skip: parseInt(skip as string),
+            take: parseInt(take as string),
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+              createdAt: true,
+            },
+          });
 
-        const total = await prisma.user.count()
-
-        return {
-          success: true,
-          data: {
-            users,
-            total,
-            page: Math.floor(parseInt(skip as string) / parseInt(take as string)) + 1,
-            pageSize: parseInt(take as string)
-          }
-        }
-      },
-      {
-        query: t.Object({
-          skip: t.Optional(t.String()),
-          take: t.Optional(t.String())
-        }),
-        detail: {
-          tags: ['User Management (Admin)'],
-          summary: 'List all users',
-          description: 'Admin endpoint to list all users with pagination',
-          security: [{ bearerAuth: [] }]
-        }
-      }
-    )
-
-    .get('/:id',
-      async ({ params: { id } }) => {
-        const user = await prisma.user.findUnique({
-          where: { id: parseInt(id) },
-          include: {
-            addresses: true,
-            profile: true
-          }
-        })
-
-        if (!user) {
-          throw new NotFoundError('User not found')
-        }
-
-        return {
-          success: true,
-          data: { user }
-        }
-      },
-      {
-        detail: {
-          tags: ['User Management (Admin)'],
-          summary: 'Get user details',
-          description: 'Admin endpoint to get detailed user information',
-          security: [{ bearerAuth: [] }]
-        }
-      }
-    )
-
-    .put('/:id/role',
-      async ({ params: { id }, body }) => {
-        try {
-          const user = await prisma.user.update({
-            where: { id: parseInt(id) },
-            data: {
-              role: body.role
-            }
-          })
+          const total = await prisma.user.count();
 
           return {
             success: true,
-            data: { user }
+            data: {
+              users,
+              total,
+              page: Math.floor(parseInt(skip as string) / parseInt(take as string)) + 1,
+              pageSize: parseInt(take as string),
+            },
+          };
+        },
+        {
+          query: t.Object({
+            skip: t.Optional(t.String()),
+            take: t.Optional(t.String()),
+          }),
+          detail: {
+            tags: ['User Management (Admin)'],
+            summary: 'List all users',
+            description: 'Admin endpoint to list all users with pagination',
+            security: [{ bearerAuth: [] }],
+          },
+        }
+      )
+
+      .get(
+        '/:id',
+        async ({ params: { id } }) => {
+          const user = await prisma.user.findUnique({
+            where: { id: parseInt(id) },
+            include: {
+              addresses: true,
+              profile: true,
+            },
+          });
+
+          if (!user) {
+            throw new NotFoundError('User not found');
           }
-        } catch (error) {
-          throw new NotFoundError('User not found')
+
+          return {
+            success: true,
+            data: { user },
+          };
+        },
+        {
+          detail: {
+            tags: ['User Management (Admin)'],
+            summary: 'Get user details',
+            description: 'Admin endpoint to get detailed user information',
+            security: [{ bearerAuth: [] }],
+          },
         }
-      },
-      {
-        body: t.Object({
-          role: t.Enum({ ADMIN: 'ADMIN', USER: 'USER' })
-        }),
-        detail: {
-          tags: ['User Management (Admin)'],
-          summary: 'Change user role',
-          description: 'Admin endpoint to update user role',
-          security: [{ bearerAuth: [] }]
+      )
+
+      .put(
+        '/:id/role',
+        async ({ params: { id }, body }) => {
+          try {
+            const user = await prisma.user.update({
+              where: { id: parseInt(id) },
+              data: {
+                role: body.role,
+              },
+            });
+
+            return {
+              success: true,
+              data: { user },
+            };
+          } catch (error) {
+            throw new NotFoundError('User not found');
+          }
+        },
+        {
+          body: t.Object({
+            role: t.Enum({ ADMIN: 'ADMIN', USER: 'USER' }),
+          }),
+          detail: {
+            tags: ['User Management (Admin)'],
+            summary: 'Change user role',
+            description: 'Admin endpoint to update user role',
+            security: [{ bearerAuth: [] }],
+          },
         }
-      }
-    )
+      )
   );
