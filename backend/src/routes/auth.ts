@@ -56,7 +56,7 @@ export const authRouter = new Elysia({ prefix: '/auth' })
 
   // Login
   .post('/login',
-    async ({ body, jwt }) => {
+    async ({ body, jwt }: { body: { email: string, password: string }, jwt: any }) => {
       const { email, password } = body
 
       const user = await prisma.user.findFirst({ 
