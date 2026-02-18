@@ -1,51 +1,52 @@
-import { type Elysia } from 'elysia'
+import { createMiddleware } from 'hono/factory'
+import { verify } from 'hono/jwt'
+import type { User } from '@prisma/client'
 import { prisma } from '../index'
-import { UnauthorizedError } from '../utils/errors'
-import bearer from '@elysiajs/bearer'
-import jwt from '@elysiajs/jwt'
+import { ForbiddenError, UnauthorizedError } from '../utils/errors'
 
-export const auth = (app: Elysia) => app
-  .use(bearer())
-  .use(jwt({
-    name: 'jwt',
-    secret: process.env.JWT_SECRET!
-  }))
-  .derive(async ({ bearer, jwt }) => {
-    if (!bearer) {
-      throw new UnauthorizedError('No token provided')
-    }
+export type AuthEnv = {
+  Variables: {
+    user: User
+  }
+}
 
-    try {
-      const payload = await jwt.verify(bearer)
+// Middleware: verify JWT and attach user to context
+export const authMiddleware = createMiddleware<AuthEnv>(async (c, next) => {
+  const authorization = c.req.header('Authorization')
+  const bearer = authorization?.startsWith('Bearer ') ? authorization.slice(7) : null
 
-      if (!payload?.userId) {
-        throw new UnauthorizedError('Invalid token')
-      }
+  if (!bearer) {
+    throw new UnauthorizedError('No token provided')
+  }
 
-      const user = await prisma.user.findUnique({
-        where: { id: payload.userId }
-      })
+  try {
+    const payload = await verify(bearer, process.env.JWT_SECRET!)
 
-      if (!user) {
-        throw new UnauthorizedError('User not found')
-      }
-
-      return { user }
-    } catch (error) {
+    if (!payload?.userId) {
       throw new UnauthorizedError('Invalid token')
     }
-  })
 
-// Middleware to check if user is authenticated
-export const isAuth = async ({ user, set }) => {
-  if (!user) {
-    throw new UnauthorizedError('Authentication required')
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId as number },
+    })
+
+    if (!user) {
+      throw new UnauthorizedError('User not found')
+    }
+
+    c.set('user', user)
+    await next()
+  } catch (error) {
+    if (error instanceof UnauthorizedError) throw error
+    throw new UnauthorizedError('Invalid token')
   }
-}
+})
 
-// Middleware to check if user is admin
-export const isAdmin = async ({ user, set }) => {
+// Middleware: require ADMIN role (must be used after authMiddleware)
+export const isAdminMiddleware = createMiddleware<AuthEnv>(async (c, next) => {
+  const user = c.get('user')
   if (!user || user.role !== 'ADMIN') {
-    throw new UnauthorizedError('Admin access required')
+    throw new ForbiddenError('Admin access required')
   }
-}
+  await next()
+})

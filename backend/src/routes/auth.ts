@@ -1,151 +1,108 @@
+import { Hono } from 'hono'
+import { zValidator } from '@hono/zod-validator'
 import { compareSync, hashSync } from 'bcrypt'
-import { Elysia, t } from 'elysia'
+import { sign } from 'hono/jwt'
+import { z } from 'zod'
 import { prisma } from '../index'
 import { SignUpSchema } from '../schema/users'
 import { BadRequestError, UnauthorizedError } from '../utils/errors'
-import { auth } from '@/plugins/auth'
+import { authMiddleware, type AuthEnv } from '../plugins/auth'
 
 const SALT_ROUNDS = 10
 
-export const authRouter = new Elysia({ prefix: '/auth' })
-  // Signup
-  .post('/signup', 
-    async ({ body }) => {
-      const validated = SignUpSchema.parse(body)
-      const { email, password, name } = validated
+export const authRouter = new Hono<AuthEnv>()
 
-      const existingUser = await prisma.user.findFirst({ 
-        where: { email } 
-      })
+// Signup
+authRouter.post(
+  '/signup',
+  zValidator('json', SignUpSchema),
+  async (c) => {
+    const { email, password, name } = c.req.valid('json')
 
-      if (existingUser) {
-        throw new BadRequestError('User already exists')
-      }
+    const existingUser = await prisma.user.findFirst({ where: { email } })
 
-      const user = await prisma.user.create({
-        data: {
-          name,
-          email,
-          password: hashSync(password, SALT_ROUNDS)
-        }
-      })
+    if (existingUser) {
+      throw new BadRequestError('User already exists')
+    }
 
-      return { 
-        success: true,
-        data: {
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: hashSync(password, SALT_ROUNDS),
+      },
+    })
+
+    return c.json({
+      success: true,
+      data: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      },
+    })
+  }
+)
+
+// Login
+authRouter.post(
+  '/login',
+  zValidator(
+    'json',
+    z.object({
+      email: z.string().email(),
+      password: z.string(),
+    })
+  ),
+  async (c) => {
+    const { email, password } = c.req.valid('json')
+
+    const user = await prisma.user.findFirst({ where: { email } })
+
+    if (!user) {
+      throw new UnauthorizedError('Invalid credentials')
+    }
+
+    if (!compareSync(password, user.password)) {
+      throw new UnauthorizedError('Invalid credentials')
+    }
+
+    const accessToken = await sign(
+      { userId: user.id, role: user.role },
+      process.env.JWT_SECRET!
+    )
+
+    return c.json({
+      success: true,
+      data: {
+        accessToken,
+        user: {
           id: user.id,
           email: user.email,
-          name: user.name,
-          role: user.role
-        }
-      }
+          role: user.role,
+        },
+      },
+    })
+  }
+)
+
+// Get current user profile
+authRouter.get('/me', authMiddleware, async (c) => {
+  const user = c.get('user')
+
+  const userWithDetails = await prisma.user.findUnique({
+    where: { id: user.id },
+    include: {
+      profile: true,
+      addresses: true,
     },
-    {
-      body: t.Object({
-        email: t.String({ format: 'email' }),
-        password: t.String({ minLength: 6 }),
-        name: t.String()
-      }),
-      detail: {
-        tags: ['Authentication'],
-        summary: 'Register a new user',
-        description: 'Create a new user account with email and password'
-      }
-    }
-  )
+  })
 
-  // Login
-  .post('/login',
-    async ({ body, jwt }: { body: { email: string, password: string }, jwt: any }) => {
-      const { email, password } = body
+  if (!userWithDetails) {
+    throw new UnauthorizedError('User not found')
+  }
 
-      const user = await prisma.user.findFirst({ 
-        where: { email } 
-      })
-
-      if (!user) {
-        throw new UnauthorizedError('Invalid credentials')
-      }
-
-      if (!compareSync(password, user.password)) {
-        throw new UnauthorizedError('Invalid credentials')
-      }
-
-      const accessToken = await jwt.sign({ 
-        userId: user.id,
-        role: user.role
-      })
-
-      return { 
-        success: true,
-        data: {
-          accessToken,
-          user: {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: user.role
-          }
-        }
-      }
-    },
-    {
-      body: t.Object({
-        email: t.String({ format: 'email' }),
-        password: t.String()
-      }),
-      detail: {
-        tags: ['Authentication'],
-        summary: 'User login',
-        description: 'Authenticate a user and receive a JWT token',
-      }
-    }
-  )
-
-  .use(auth)
-
-  // Profile
-  .get('/me',
-    async ({ bearer, jwt, set }) => {
-      
-      if (!bearer) {
-        set.status = 401
-        throw new UnauthorizedError('No token provided')
-      }
-
-      try {
-        const payload = await jwt.verify(bearer)
-        if (!payload?.userId) {
-          throw new UnauthorizedError('Invalid token')
-        }
-
-        const userWithDetails = await prisma.user.findUnique({
-          where: { id: payload.userId },
-          include: {
-            profile: true,
-            addresses: true
-          }
-        })
-
-        if (!userWithDetails) {
-          throw new UnauthorizedError('User not found')
-        }
-
-        return { 
-          success: true,
-          data: { user: userWithDetails }
-        }
-      } catch (error) {
-        console.error('Auth error:', error)
-        throw new UnauthorizedError('Invalid token')
-      }
-    },
-    { 
-      detail: {
-        tags: ['Authentication'],
-        summary: 'Get user profile',
-        description: 'Get the profile of the currently authenticated user',
-        security: [{ bearerAuth: [] }]
-      }
-    }
-  )
+  return c.json({
+    success: true,
+    data: { user: userWithDetails },
+  })
+})

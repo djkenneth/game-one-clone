@@ -1,242 +1,144 @@
-import { Elysia, t } from 'elysia'
+import { Hono } from 'hono'
+import { zValidator } from '@hono/zod-validator'
+import { z } from 'zod'
 import { prisma } from '../index'
-import { auth, isAdmin } from '../plugins/auth'
+import { authMiddleware, isAdminMiddleware, type AuthEnv } from '../plugins/auth'
 import { NotFoundError } from '../utils/errors'
-import { generateSlug } from '../utils/helpers'
 
-export const productRouter = new Elysia({ prefix: '/products' })
-  // Get all products
-  .get('/', 
-    async ({ query }) => {
-      const { page = '1', limit = '10', ...filters } = query
-      const skip = (parseInt(page as string) - 1) * parseInt(limit as string)
+const createProductSchema = z.object({
+  name: z.string(),
+  description: z.string().optional(),
+  status: z.string().optional(),
+  shopId: z.number(),
+  categoryId: z.number(),
+  brandId: z.number().optional(),
+})
 
-      const [products, total] = await Promise.all([
-        prisma.product.findMany({
-          skip,
-          take: parseInt(limit as string),
-          include: { categories: true },
-          where: filters
-        }),
-        prisma.product.count({ where: filters })
-      ])
+const updateProductSchema = createProductSchema.partial()
 
-      return {
-        success: true,
-        data: {
-          products,
-          total,
-          page: parseInt(page as string),
-          pageSize: parseInt(limit as string)
-        }
-      }
-    },
-    {
-      query: t.Object({
-        page: t.Optional(t.String()),
-        limit: t.Optional(t.String()),
-        search: t.Optional(t.String())
-      }),
-      detail: {
-        tags: ['Products'],
-        summary: 'List all products',
-        description: 'Get paginated list of products with optional filters'
-      }
-    }
-  )
+export const productRouter = new Hono<AuthEnv>()
 
-  // Get single product
-  .get('/:id',
-    async ({ params: { id } }) => {
-      const product = await prisma.product.findUnique({
-        where: { id: parseInt(id) },
-        include: { categories: true }
-      })
+// Get all products
+productRouter.get(
+  '/',
+  zValidator(
+    'query',
+    z.object({
+      page: z.string().optional(),
+      limit: z.string().optional(),
+      search: z.string().optional(),
+    })
+  ),
+  async (c) => {
+    const { page = '1', limit = '10', search } = c.req.valid('query')
+    const skip = (parseInt(page) - 1) * parseInt(limit)
 
-      if (!product) {
-        throw new NotFoundError('Product not found')
-      }
-
-      return {
-        success: true,
-        data: { product }
-      }
-    },
-    {
-      detail: {
-        tags: ['Products'],
-        summary: 'Get product by ID',
-        description: 'Retrieve detailed information about a specific product'
-      }
-    }
-  )
-
-  .get('/search',
-    async ({ query: { q } }) => {
-      if (!q) return { products: [] }
-
-      const searchQuery = q.toString()
-      
-      const products = await prisma.product.findMany({
-        where: {
+    const where = search
+      ? {
           OR: [
-            {
-              title: {
-                contains: searchQuery,
-                mode: 'insensitive'
-              }
-            },
-            {
-              description: {
-                contains: searchQuery,
-                mode: 'insensitive'
-              }
-            },
-            {
-              tags: {
-                contains: searchQuery,
-                mode: 'insensitive'
-              }
-            }
-          ]
-        },
-        include: {
-          categories: true
+            { name: { contains: search, mode: 'insensitive' as const } },
+            { description: { contains: search, mode: 'insensitive' as const } },
+          ],
         }
-      })
+      : {}
 
-      return {
-        success: true,
-        data: { products }
-      }
-    },
-    {
-      query: t.Object({
-        q: t.String()
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        skip,
+        take: parseInt(limit),
+        include: { category: true },
+        where,
       }),
-      detail: {
-        tags: ['Products'],
-        summary: 'Search products',
-        description: 'Search products by title, description, or tags'
-      }
-    }
-  )
+      prisma.product.count({ where }),
+    ])
 
-  // Create product (admin only)
-  .post('/',
-    async ({ body }) => {
-      const { title, categories, tags, ...rest } = body
+    return c.json({
+      success: true,
+      data: { products, total, page: parseInt(page), pageSize: parseInt(limit) },
+    })
+  }
+)
 
-      const product = await prisma.product.create({
-        data: {
-          ...rest,
-          title,
-          slug: generateSlug(title),
-          tags: Array.isArray(tags) ? tags.join(',') : tags,
-          categories: {
-            connectOrCreate: categories.map(name => ({
-              where: { name },
-              create: { 
-                name,
-                slug: generateSlug(name)
-              }
-            }))
-          }
-        },
-        include: {
-          categories: true
-        }
-      })
+// Search products
+productRouter.get(
+  '/search',
+  zValidator('query', z.object({ q: z.string() })),
+  async (c) => {
+    const { q } = c.req.valid('query')
 
-      return {
-        success: true,
-        data: { product }
-      }
-    },
-    {
-      onBeforeHandle: [auth, isAdmin],
-      body: t.Object({
-        title: t.String(),
-        price: t.Number(),
-        availability: t.Boolean(),
-        image: t.String(),
-        description: t.String(),
-        sku: t.String(),
-        url: t.String(),
-        categories: t.Array(t.String()),
-        tags: t.Array(t.String())
-      }),
-      detail: {
-        tags: ['Products'],
-        summary: 'Create new product',
-        description: 'Create a new product (Admin only)',
-        security: [{ bearerAuth: [] }]
-      }
-    }
-  )
+    const products = await prisma.product.findMany({
+      where: {
+        OR: [
+          { name: { contains: q, mode: 'insensitive' } },
+          { description: { contains: q, mode: 'insensitive' } },
+        ],
+      },
+      include: { category: true },
+    })
 
-  // Update product (admin only)
-  .put('/:id',
-    async ({ params: { id }, body }) => {
-      const product = await prisma.product.update({
-        where: { id: parseInt(id) },
-        data: {
-          ...body,
-          ...(body.title && { slug: generateSlug(body.title) }),
-          ...(body.tags && { tags: Array.isArray(body.tags) ? body.tags.join(',') : body.tags }),
-          ...(body.categories && {
-            categories: {
-              set: [],
-              connectOrCreate: body.categories.map(name => ({
-                where: { name },
-                create: { 
-                  name,
-                  slug: generateSlug(name)
-                }
-              }))
-            }
-          })
-        },
-        include: {
-          categories: true
-        }
-      })
+    return c.json({ success: true, data: { products } })
+  }
+)
 
-      return {
-        success: true,
-        data: { product }
-      }
-    },
-    {
-      onBeforeHandle: [auth, isAdmin],
-      detail: {
-        tags: ['Products'],
-        summary: 'Update product',
-        description: 'Update an existing product (Admin only)',
-        security: [{ bearerAuth: [] }]
-      }
-    }
-  )
+// Get single product
+productRouter.get('/:id', async (c) => {
+  const id = parseInt(c.req.param('id'))
 
-  // Delete product (admin only)
-  .delete('/:id',
-    async ({ params: { id } }) => {
-      await prisma.product.delete({
-        where: { id: parseInt(id) }
-      })
+  const product = await prisma.product.findUnique({
+    where: { id },
+    include: { category: true },
+  })
 
-      return {
-        success: true,
-        message: 'Product deleted successfully'
-      }
-    },
-    {
-      onBeforeHandle: [auth, isAdmin],
-      detail: {
-        tags: ['Products'],
-        summary: 'Delete product',
-        description: 'Delete an existing product (Admin only)',
-        security: [{ bearerAuth: [] }]
-      }
-    }
-  )
+  if (!product) {
+    throw new NotFoundError('Product not found')
+  }
+
+  return c.json({ success: true, data: { product } })
+})
+
+// Create product (admin only)
+productRouter.post(
+  '/',
+  authMiddleware,
+  isAdminMiddleware,
+  zValidator('json', createProductSchema),
+  async (c) => {
+    const body = c.req.valid('json')
+
+    const product = await prisma.product.create({
+      data: body,
+      include: { category: true },
+    })
+
+    return c.json({ success: true, data: { product } })
+  }
+)
+
+// Update product (admin only)
+productRouter.put(
+  '/:id',
+  authMiddleware,
+  isAdminMiddleware,
+  zValidator('json', updateProductSchema),
+  async (c) => {
+    const id = parseInt(c.req.param('id'))
+    const body = c.req.valid('json')
+
+    const product = await prisma.product.update({
+      where: { id },
+      data: body,
+      include: { category: true },
+    })
+
+    return c.json({ success: true, data: { product } })
+  }
+)
+
+// Delete product (admin only)
+productRouter.delete('/:id', authMiddleware, isAdminMiddleware, async (c) => {
+  const id = parseInt(c.req.param('id'))
+
+  await prisma.product.delete({ where: { id } })
+
+  return c.json({ success: true, message: 'Product deleted successfully' })
+})

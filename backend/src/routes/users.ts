@@ -1,394 +1,210 @@
-import { Elysia, t } from 'elysia';
-import { prisma } from '../index';
-import { auth, isAuth } from '../plugins/auth';
-import { NotFoundError, UnauthorizedError } from '../utils/errors';
-import { AddressType, ProfileInputSchema } from '@/schema/users';
+import { Hono } from 'hono'
+import { zValidator } from '@hono/zod-validator'
+import { z } from 'zod'
+import { prisma } from '../index'
+import { authMiddleware, isAdminMiddleware, type AuthEnv } from '../plugins/auth'
+import { NotFoundError, UnauthorizedError } from '../utils/errors'
+import { AddressSchema, ProfileInputSchema, UpdateRoleSchema } from '../schema/users'
 
-export const userRouter = new Elysia({ prefix: '/users' })
-  // Profile routes
-  .group('/profile', app =>
-    app
-      .use(auth)
+export const userRouter = new Hono<AuthEnv>()
 
-      .post(
-        '/',
-        async ({ body, user }) => {
-          if (!user) {
-            throw new UnauthorizedError('User not authenticated');
-          }
+// ─── Profile Routes ───────────────────────────────────────────────────────────
 
-          const profileData = {
-            firstName: body.firstName,
-            middleName: body.middleName,
-            lastName: body.lastName,
-            birthDate: new Date(body.birthDate),
-            age: parseInt(body.age),
-            profilePicture: body.profilePicture,
-            userId: user.id,
-          };
+const profileRouter = new Hono<AuthEnv>()
+profileRouter.use('*', authMiddleware)
 
-          const profile = await prisma.profile.create({
-            data: profileData,
-          });
+profileRouter.post('/', zValidator('json', ProfileInputSchema), async (c) => {
+  const user = c.get('user')
+  const body = c.req.valid('json')
 
-          console.log('profile', profile);
+  const profileData = {
+    firstName: body.firstName,
+    middleName: body.middleName,
+    lastName: body.lastName,
+    birthDate: new Date(body.birthDate),
+    age: parseInt(body.age),
+    profilePicture: body.profilePicture,
+    userId: user.id,
+  }
 
-          return {
-            success: true,
-            data: { profile },
-          };
-        },
-        {
-          onBeforeHandle: [auth, isAuth],
-          body: ProfileInputSchema,
-          detail: {
-            tags: ['Profile Management'],
-            summary: 'Create user profile',
-            description: 'Create a new profile for the user',
-            security: [{ bearerAuth: [] }],
-          },
-        }
-      )
+  const profile = await prisma.profile.create({ data: profileData })
 
-      .get(
-        '/',
-        async ({ user }) => {
-          const profile = await prisma.profile.findUnique({
-            where: { userId: user.id },
-          });
+  return c.json({ success: true, data: { profile } })
+})
 
-          if (!profile) {
-            throw new NotFoundError('Profile not found');
-          }
+profileRouter.get('/', async (c) => {
+  const user = c.get('user')
 
-          return {
-            success: true,
-            data: { profile },
-          };
-        },
-        {
-          detail: {
-            tags: ['Profile Management'],
-            summary: 'Get user profile',
-            description: 'Retrieve user profile information',
-            security: [{ bearerAuth: [] }],
-          },
-        }
-      )
+  const profile = await prisma.profile.findUnique({ where: { userId: user.id } })
 
-      .put(
-        '/',
-        async ({ body, user }) => {
-          try {
-            if (!user) {
-              throw new UnauthorizedError('User not authenticated');
-            }
+  if (!profile) {
+    throw new NotFoundError('Profile not found')
+  }
 
-            const profileData = {
-              firstName: body.firstName,
-              middleName: body.middleName,
-              lastName: body.lastName,
-              birthDate: new Date(body.birthDate),
-              age: parseInt(body.age),
-              profilePicture: body.profilePicture,
-            };
+  return c.json({ success: true, data: { profile } })
+})
 
-            const profile = await prisma.profile.update({
-              where: { userId: user.id },
-              data: profileData,
-            });
+profileRouter.put('/', zValidator('json', ProfileInputSchema), async (c) => {
+  const user = c.get('user')
+  const body = c.req.valid('json')
 
-            return {
-              success: true,
-              data: { profile },
-            };
-          } catch (error) {
-            throw new NotFoundError('Profile not found');
-          }
-        },
-        {
-          body: ProfileInputSchema,
-          detail: {
-            tags: ['Profile Management'],
-            summary: 'Update user profile',
-            description: 'Update existing user profile information',
-            security: [{ bearerAuth: [] }],
-          },
-        }
-      )
-  )
+  try {
+    const profile = await prisma.profile.update({
+      where: { userId: user.id },
+      data: {
+        firstName: body.firstName,
+        middleName: body.middleName,
+        lastName: body.lastName,
+        birthDate: new Date(body.birthDate),
+        age: parseInt(body.age),
+        profilePicture: body.profilePicture,
+      },
+    })
 
-  // Address routes
-  .group('/address', app =>
-    app
-      .post(
-        '/',
-        async ({ body, user }) => {
+    return c.json({ success: true, data: { profile } })
+  } catch {
+    throw new NotFoundError('Profile not found')
+  }
+})
 
-          if (!user) {
-            throw new UnauthorizedError('User not authenticated');
-          }
+userRouter.route('/profile', profileRouter)
 
-          const addressData = {
-            lineOne: body.lineOne,
-            lineTwo: body.lineTwo,
-            city: body.city,
-            country: body.country,
-            pincode: body.pincode,
-            userId: user.id,
-          };
+// ─── Address Routes ───────────────────────────────────────────────────────────
 
-          const address = await prisma.address.create({
-            data: addressData,
-          });
+const addressRouter = new Hono<AuthEnv>()
+addressRouter.use('*', authMiddleware)
 
-          return {
-            success: true,
-            data: { address },
-          };
-        },
-        {
-          body: AddressType,
-          detail: {
-            tags: ['Address Management'],
-            summary: 'Create new address',
-            description: 'Add a new address to user profile',
-            security: [{ bearerAuth: [] }],
-          },
-        }
-      )
+addressRouter.post('/', zValidator('json', AddressSchema), async (c) => {
+  const user = c.get('user')
+  const body = c.req.valid('json')
 
-      .get(
-        '/',
-        async ({ user }) => {
-          if (!user) {
-            throw new UnauthorizedError('User not authenticated');
-          }
+  const address = await prisma.address.create({
+    data: {
+      lineOne: body.lineOne,
+      lineTwo: body.lineTwo,
+      city: body.city,
+      country: body.country,
+      pincode: body.pincode,
+      userId: user.id,
+    },
+  })
 
-          const addresses = await prisma.address.findMany({
-            where: { userId: user.id },
-          });
+  return c.json({ success: true, data: { address } })
+})
 
-          return {
-            success: true,
-            data: { addresses },
-          };
-        },
-        {
-          detail: {
-            tags: ['Address Management'],
-            summary: 'List user addresses',
-            description: 'Get all addresses associated with the user',
-            security: [{ bearerAuth: [] }],
-          },
-        }
-      )
+addressRouter.get('/', async (c) => {
+  const user = c.get('user')
 
-      .delete(
-        '/:id',
-        async ({ params: { id }, user }) => {
-          try {
-            if (!user) {
-              throw new UnauthorizedError('User not authenticated');
-            }
+  const addresses = await prisma.address.findMany({ where: { userId: user.id } })
 
-            const address = await prisma.address.findFirst({
-              where: {
-                id: parseInt(id),
-                userId: user.id,
-              },
-            });
+  return c.json({ success: true, data: { addresses } })
+})
 
-            if (!address) {
-              throw new NotFoundError('Address not found');
-            }
+addressRouter.delete('/:id', async (c) => {
+  const user = c.get('user')
+  const id = parseInt(c.req.param('id'))
 
-            await prisma.address.delete({
-              where: { id: parseInt(id) },
-            });
+  const address = await prisma.address.findFirst({
+    where: { id, userId: user.id },
+  })
 
-            return {
-              success: true,
-              message: 'Address deleted successfully',
-            };
-          } catch (error) {
-            throw new NotFoundError('Address not found');
-          }
-        },
-        {
-          detail: {
-            tags: ['Address Management'],
-            summary: 'Delete address',
-            description: 'Remove an address from user profile',
-            security: [{ bearerAuth: [] }],
-          },
-        }
-      )
+  if (!address) {
+    throw new NotFoundError('Address not found')
+  }
 
-      .put(
-        '/:id',
-        async ({ params: { id }, body, user }) => {
+  await prisma.address.delete({ where: { id } })
 
-          if (!user) {
-            throw new UnauthorizedError('User not authenticated');
-          }
+  return c.json({ success: true, message: 'Address deleted successfully' })
+})
 
-          try {
-            // Check if address belongs to user
-            const address = await prisma.address.findFirst({
-              where: {
-                id: parseInt(id),
-                userId: user.id,
-              },
-            });
+addressRouter.put('/:id', zValidator('json', AddressSchema), async (c) => {
+  const user = c.get('user')
+  const id = parseInt(c.req.param('id'))
+  const body = c.req.valid('json')
 
-            if (!address) {
-              throw new NotFoundError('Address not found');
-            }
+  const existing = await prisma.address.findFirst({ where: { id, userId: user.id } })
 
-            const addressData = {
-              lineOne: body.lineOne,
-              lineTwo: body.lineTwo,
-              city: body.city,
-              country: body.country,
-              pincode: body.pincode,
-            };
+  if (!existing) {
+    throw new NotFoundError('Address not found')
+  }
 
-            // Update address
-            const updatedAddress = await prisma.address.update({
-              where: { id: parseInt(id) },
-              data: addressData
-            });
+  const updatedAddress = await prisma.address.update({
+    where: { id },
+    data: {
+      lineOne: body.lineOne,
+      lineTwo: body.lineTwo,
+      city: body.city,
+      country: body.country,
+      pincode: body.pincode,
+    },
+  })
 
-            return {
-              success: true,
-              data: { address: updatedAddress },
-            };
-          } catch (error) {
-            if (error instanceof NotFoundError) {
-              throw error;
-            }
-            throw new NotFoundError('Address not found');
-          }
-        },
-        {
-          body: AddressType,
-          detail: {
-            tags: ['Address Management'],
-            summary: 'Update address',
-            description: 'Update an existing address for the user',
-            security: [{ bearerAuth: [] }],
-          },
-        }
-      )
-  )
+  return c.json({ success: true, data: { address: updatedAddress } })
+})
 
-  // Admin routes
-  .group('/admin', app =>
-    app
+userRouter.route('/address', addressRouter)
 
-      .get(
-        '/',
-        async ({ query }) => {
-          const { skip = '0', take = '10' } = query;
+// ─── Admin Routes ─────────────────────────────────────────────────────────────
 
-          const users = await prisma.user.findMany({
-            skip: parseInt(skip as string),
-            take: parseInt(take as string),
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              role: true,
-              createdAt: true,
-            },
-          });
+const adminRouter = new Hono<AuthEnv>()
+adminRouter.use('*', authMiddleware, isAdminMiddleware)
 
-          const total = await prisma.user.count();
+adminRouter.get(
+  '/',
+  zValidator('query', z.object({ skip: z.string().optional(), take: z.string().optional() })),
+  async (c) => {
+    const { skip = '0', take = '10' } = c.req.valid('query')
 
-          return {
-            success: true,
-            data: {
-              users,
-              total,
-              page: Math.floor(parseInt(skip as string) / parseInt(take as string)) + 1,
-              pageSize: parseInt(take as string),
-            },
-          };
-        },
-        {
-          query: t.Object({
-            skip: t.Optional(t.String()),
-            take: t.Optional(t.String()),
-          }),
-          detail: {
-            tags: ['User Management (Admin)'],
-            summary: 'List all users',
-            description: 'Admin endpoint to list all users with pagination',
-            security: [{ bearerAuth: [] }],
-          },
-        }
-      )
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        skip: parseInt(skip),
+        take: parseInt(take),
+        select: { id: true, email: true, role: true, createdAt: true },
+      }),
+      prisma.user.count(),
+    ])
 
-      .get(
-        '/:id',
-        async ({ params: { id } }) => {
-          const user = await prisma.user.findUnique({
-            where: { id: parseInt(id) },
-            include: {
-              addresses: true,
-              profile: true,
-            },
-          });
+    return c.json({
+      success: true,
+      data: {
+        users,
+        total,
+        page: Math.floor(parseInt(skip) / parseInt(take)) + 1,
+        pageSize: parseInt(take),
+      },
+    })
+  }
+)
 
-          if (!user) {
-            throw new NotFoundError('User not found');
-          }
+adminRouter.get('/:id', async (c) => {
+  const id = parseInt(c.req.param('id'))
 
-          return {
-            success: true,
-            data: { user },
-          };
-        },
-        {
-          detail: {
-            tags: ['User Management (Admin)'],
-            summary: 'Get user details',
-            description: 'Admin endpoint to get detailed user information',
-            security: [{ bearerAuth: [] }],
-          },
-        }
-      )
+  const user = await prisma.user.findUnique({
+    where: { id },
+    include: { addresses: true, profile: true },
+  })
 
-      .put(
-        '/:id/role',
-        async ({ params: { id }, body }) => {
-          try {
-            const user = await prisma.user.update({
-              where: { id: parseInt(id) },
-              data: {
-                role: body.role,
-              },
-            });
+  if (!user) {
+    throw new NotFoundError('User not found')
+  }
 
-            return {
-              success: true,
-              data: { user },
-            };
-          } catch (error) {
-            throw new NotFoundError('User not found');
-          }
-        },
-        {
-          body: t.Object({
-            role: t.Enum({ ADMIN: 'ADMIN', USER: 'USER' }),
-          }),
-          detail: {
-            tags: ['User Management (Admin)'],
-            summary: 'Change user role',
-            description: 'Admin endpoint to update user role',
-            security: [{ bearerAuth: [] }],
-          },
-        }
-      )
-  );
+  return c.json({ success: true, data: { user } })
+})
+
+adminRouter.put('/:id/role', zValidator('json', UpdateRoleSchema), async (c) => {
+  const id = parseInt(c.req.param('id'))
+  const { role } = c.req.valid('json')
+
+  try {
+    const user = await prisma.user.update({
+      where: { id },
+      data: { role },
+    })
+
+    return c.json({ success: true, data: { user } })
+  } catch {
+    throw new NotFoundError('User not found')
+  }
+})
+
+userRouter.route('/admin', adminRouter)

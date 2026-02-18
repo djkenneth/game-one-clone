@@ -1,169 +1,147 @@
-import { Elysia, t } from 'elysia'
+import { Hono } from 'hono'
+import { zValidator } from '@hono/zod-validator'
+import { z } from 'zod'
 import { prisma } from '../index'
-import { auth } from '../plugins/auth'
+import { authMiddleware, type AuthEnv } from '../plugins/auth'
 import { BadRequestError, NotFoundError } from '../utils/errors'
 
-export const cartRouter = new Elysia({ prefix: '/cart' })
-  .use(auth)
-  
-  .get('/',
-    async ({ user }) => {
-      const cartItems = await prisma.cartItem.findMany({
-        where: { userId: user.id },
-        include: { product: true }
-      })
+export const cartRouter = new Hono<AuthEnv>()
 
-      const total = cartItems.reduce(
-        (sum, item) => sum + (item.quantity * item.product.price),
-        0
-      )
+cartRouter.use('*', authMiddleware)
 
-      return {
-        success: true,
-        data: {
-          items: cartItems,
-          total
-        }
-      }
+// Get cart
+cartRouter.get('/', async (c) => {
+  const user = c.get('user')
+
+  const cart = await prisma.cart.findFirst({
+    where: { userId: user.id, isActive: true },
+    include: {
+      items: {
+        include: { variant: true },
+      },
     },
-    {
-      detail: {
-        tags: ['Cart'],
-        summary: 'Get cart',
-        description: 'Retrieve current user\'s shopping cart',
-        security: [{ bearerAuth: [] }]
-      }
+  })
+
+  return c.json({ success: true, data: { cart } })
+})
+
+// Add item to cart
+cartRouter.post(
+  '/',
+  zValidator(
+    'json',
+    z.object({
+      productVariantId: z.number(),
+      quantity: z.number().min(1),
+      price: z.number(),
+    })
+  ),
+  async (c) => {
+    const user = c.get('user')
+    const { productVariantId, quantity, price } = c.req.valid('json')
+
+    const variant = await prisma.productVariant.findUnique({
+      where: { id: productVariantId },
+    })
+
+    if (!variant) {
+      throw new NotFoundError('Product variant not found')
     }
-  )
 
-  .post('/',
-    async ({ body, user }) => {
-      const { productId, quantity } = body
-
-      const product = await prisma.product.findUnique({
-        where: { id: productId }
-      })
-
-      if (!product) {
-        throw new NotFoundError('Product not found')
-      }
-
-      if (!product.availability) {
-        throw new BadRequestError('Product is not available')
-      }
-
-      const existingItem = await prisma.cartItem.findFirst({
-        where: {
-          userId: user.id,
-          productId
-        }
-      })
-
-      let cartItem
-
-      if (existingItem) {
-        cartItem = await prisma.cartItem.update({
-          where: { id: existingItem.id },
-          data: {
-            quantity: existingItem.quantity + quantity
-          },
-          include: { product: true }
-        })
-      } else {
-        cartItem = await prisma.cartItem.create({
-          data: {
-            userId: user.id,
-            productId,
-            quantity
-          },
-          include: { product: true }
-        })
-      }
-
-      return {
-        success: true,
-        data: { cartItem }
-      }
-    },
-    {
-      body: t.Object({
-        productId: t.Number(),
-        quantity: t.Number({ minimum: 1 })
-      }),
-      detail: {
-        tags: ['Cart'],
-        summary: 'Add to cart',
-        description: 'Add a product to shopping cart',
-        security: [{ bearerAuth: [] }]
-      }
+    if (!variant.isActive) {
+      throw new BadRequestError('Product variant is not available')
     }
-  )
 
-  .put('/:id',
-    async ({ params: { id }, body, user }) => {
-      const cartItem = await prisma.cartItem.findFirst({
-        where: {
-          id: parseInt(id),
-          userId: user.id
-        }
+    let cart = await prisma.cart.findFirst({
+      where: { userId: user.id, isActive: true },
+    })
+
+    if (!cart) {
+      cart = await prisma.cart.create({
+        data: { userId: user.id },
       })
-
-      if (!cartItem) {
-        throw new NotFoundError('Cart item not found')
-      }
-
-      const updatedItem = await prisma.cartItem.update({
-        where: { id: parseInt(id) },
-        data: { quantity: body.quantity },
-        include: { product: true }
-      })
-
-      return {
-        success: true,
-        data: { cartItem: updatedItem }
-      }
-    },
-    {
-      body: t.Object({
-        quantity: t.Number({ minimum: 1 })
-      }),
-      detail: {
-        tags: ['Cart'],
-        summary: 'Update cart item',
-        description: 'Update quantity of a cart item',
-        security: [{ bearerAuth: [] }]
-      }
     }
-  )
 
-  .delete('/:id',
-    async ({ params: { id }, user }) => {
-      const cartItem = await prisma.cartItem.findFirst({
-        where: {
-          id: parseInt(id),
-          userId: user.id
-        }
+    const existingItem = await prisma.cartItem.findFirst({
+      where: { cartId: cart.id, productVariantId },
+    })
+
+    let cartItem
+
+    if (existingItem) {
+      cartItem = await prisma.cartItem.update({
+        where: { id: existingItem.id },
+        data: { quantity: existingItem.quantity + quantity },
+        include: { variant: true },
       })
-
-      if (!cartItem) {
-        throw new NotFoundError('Cart item not found')
-      }
-
-      await prisma.cartItem.delete({
-        where: { id: parseInt(id) }
+    } else {
+      cartItem = await prisma.cartItem.create({
+        data: { cartId: cart.id, productVariantId, quantity, price },
+        include: { variant: true },
       })
-
-      return {
-        success: true,
-        message: 'Item removed from cart'
-      }
-    },
-    {
-      detail: {
-        tags: ['Cart'],
-        summary: 'Remove from cart',
-        description: 'Remove an item from shopping cart',
-        security: [{ bearerAuth: [] }]
-      }
     }
-  )
+
+    return c.json({ success: true, data: { cartItem } })
+  }
+)
+
+// Update cart item quantity
+cartRouter.put(
+  '/:id',
+  zValidator('json', z.object({ quantity: z.number().min(1) })),
+  async (c) => {
+    const user = c.get('user')
+    const id = parseInt(c.req.param('id'))
+    const { quantity } = c.req.valid('json')
+
+    const cart = await prisma.cart.findFirst({
+      where: { userId: user.id, isActive: true },
+    })
+
+    if (!cart) {
+      throw new NotFoundError('Cart not found')
+    }
+
+    const cartItem = await prisma.cartItem.findFirst({
+      where: { id, cartId: cart.id },
+    })
+
+    if (!cartItem) {
+      throw new NotFoundError('Cart item not found')
+    }
+
+    const updatedItem = await prisma.cartItem.update({
+      where: { id },
+      data: { quantity },
+      include: { variant: true },
+    })
+
+    return c.json({ success: true, data: { cartItem: updatedItem } })
+  }
+)
+
+// Remove item from cart
+cartRouter.delete('/:id', async (c) => {
+  const user = c.get('user')
+  const id = parseInt(c.req.param('id'))
+
+  const cart = await prisma.cart.findFirst({
+    where: { userId: user.id, isActive: true },
+  })
+
+  if (!cart) {
+    throw new NotFoundError('Cart not found')
+  }
+
+  const cartItem = await prisma.cartItem.findFirst({
+    where: { id, cartId: cart.id },
+  })
+
+  if (!cartItem) {
+    throw new NotFoundError('Cart item not found')
+  }
+
+  await prisma.cartItem.delete({ where: { id } })
+
+  return c.json({ success: true, message: 'Item removed from cart' })
+})

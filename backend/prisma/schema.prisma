@@ -5,149 +5,400 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
 }
+
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  schemas = ["uac", "seller", "catalog", "sales", "payment", "logistics", "wallet", "review"]
 }
+
+//////////////////////////////////////////////////////
+// ENUMS (Global - stays public unless mapped)
+//////////////////////////////////////////////////////
 
 enum Role {
   ADMIN
   USER
+  SELLER
 }
 
-enum OrderEventStatus {
+enum OrderStatus {
   PENDING
-  ACCEPTED
-  OUT_FOR_DELIVERY
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum ShipmentStatus {
+  PENDING
+  SHIPPED
+  IN_TRANSIT
   DELIVERED
   CANCELLED
 }
 
+//////////////////////////////////////////////////////
+// UAC SCHEMA
+//////////////////////////////////////////////////////
+
 model User {
-  id                     Int      @id @default(autoincrement())
-  email                  String   @unique
-  name                   String?
-  password               String
-  role                   Role     @default(USER)
-  defaultShippingAddress Int?
-  defaultBillingAddress  Int?
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   profile   Profile?
   addresses Address[]
-  CartItem  CartItem[]
-  Order     Order[]
+  carts     Cart[]
+  orders    Order[]
+  wallet    Wallet?
+  seller    SellerAccount?
 
   @@map("users")
+  @@schema("uac")
 }
 
 model Profile {
-  id             Int      @id @default(autoincrement())
-  firstName      String
-  middleName     String?
-  lastName       String
-  birthDate      DateTime
-  age            Int
-  profilePicture String?
-  userId         Int      @unique
-  user           User     @relation(fields: [userId], references: [id])
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  firstName String
+  lastName  String
+  phone     String?
+  avatarUrl String?
+  birthday  DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@map("profile")
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("profiles")
+  @@schema("uac")
 }
 
 model Address {
-  id        Int      @id @default(autoincrement())
-  lineOne   String
-  lineTwo   String?
-  city      String
-  country   String
-  pincode   String
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  fullName   String
+  street     String
+  city       String
+  state      String?
+  postalCode String
+  country    String
+  phone      String?
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
 
   @@map("addresses")
+  @@schema("uac")
+}
+
+//////////////////////////////////////////////////////
+// SELLER SCHEMA
+//////////////////////////////////////////////////////
+
+model Shop {
+  id          Int      @id @default(autoincrement())
+  ownerId     Int
+  name        String   @unique
+  description String?
+  logoUrl     String?
+  status      String?
+  createdAt   DateTime @default(now())
+
+  owner    User     @relation(fields: [ownerId], references: [id])
+  products Product[]
+  orders   Order[]
+
+  @@map("shops")
+  @@schema("seller")
+}
+
+model SellerAccount {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  shopId    Int
+  verified  Boolean  @default(false)
+  status    String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  shop Shop @relation(fields: [shopId], references: [id])
+
+  @@map("seller_accounts")
+  @@schema("seller")
+}
+
+//////////////////////////////////////////////////////
+// CATALOG SCHEMA
+//////////////////////////////////////////////////////
+
+model Category {
+  id          Int        @id @default(autoincrement())
+  parentId    Int?
+  name        String
+  description String?
+  isActive    Boolean    @default(true)
+
+  parent   Category? @relation("CategoryParent", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryParent")
+  products Product[]
+
+  @@map("categories")
+  @@schema("catalog")
+}
+
+model Brand {
+  id      Int     @id @default(autoincrement())
+  name    String  @unique
+  logoUrl String?
+
+  products Product[]
+
+  @@map("brands")
+  @@schema("catalog")
 }
 
 model Product {
-  id           Int            @id @default(autoincrement())
-  slug         String?        @unique
-  title        String
-  price        Int
-  availability Boolean
-  image        String
-  description  String         
-  sku          String         @unique
-  url          String
-  tags         String?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  categories   Category[]     @relation("ProductCategories")
-  CartItem     CartItem[]
-  orders       OrderProduct[]
+  id         Int      @id @default(autoincrement())
+  shopId     Int
+  categoryId Int
+  brandId    Int?
+  name       String
+  description String?
+  status     String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  shop     Shop     @relation(fields: [shopId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+  brand    Brand?   @relation(fields: [brandId], references: [id])
+
+  variants ProductVariant[]
+  reviews  Review[]
+
+  @@map("products")
+  @@schema("catalog")
 }
 
-model Category {
-  id       Int       @id @default(autoincrement())
-  name     String    @unique
-  slug     String?   @unique
-  products Product[] @relation("ProductCategories")
+model ProductVariant {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  sku       String   @unique
+  price     Decimal
+  stock     Int
+  weight    Decimal?
+  isActive  Boolean  @default(true)
+
+  product Product @relation(fields: [productId], references: [id])
+  items   OrderItem[]
+  cartItems CartItem[]
+
+  @@map("product_variants")
+  @@schema("catalog")
+}
+
+//////////////////////////////////////////////////////
+// SALES SCHEMA
+//////////////////////////////////////////////////////
+
+model Cart {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  isActive  Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+
+  user  User      @relation(fields: [userId], references: [id])
+  items CartItem[]
+
+  @@map("carts")
+  @@schema("sales")
 }
 
 model CartItem {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  productId Int
-  product   Product  @relation(fields: [productId], references: [id])
-  quantity  Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               Int @id @default(autoincrement())
+  cartId           Int
+  productVariantId Int
+  quantity         Int
+  price            Decimal
+
+  cart     Cart           @relation(fields: [cartId], references: [id])
+  variant  ProductVariant @relation(fields: [productVariantId], references: [id])
 
   @@map("cart_items")
+  @@schema("sales")
 }
 
 model Order {
-  id        Int              @id @default(autoincrement())
-  userId    Int
-  user      User             @relation(fields: [userId], references: [id])
-  netAmount Decimal
-  address   String
-  status    OrderEventStatus @default(PENDING)
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
-  products  OrderProduct[]
-  events    OrderEvent[]
+  id            Int         @id @default(autoincrement())
+  userId        Int
+  shopId        Int
+  addressId     Int
+  totalAmount   Decimal
+  status        OrderStatus @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id])
+  shop    Shop    @relation(fields: [shopId], references: [id])
+  address Address @relation(fields: [addressId], references: [id])
+
+  items    OrderItem[]
+  payment  Payment?
+  shipment Shipment?
 
   @@map("orders")
+  @@schema("sales")
 }
 
-model OrderProduct {
+model OrderItem {
+  id               Int @id @default(autoincrement())
+  orderId          Int
+  productVariantId Int
+  quantity         Int
+  price            Decimal
+
+  order   Order          @relation(fields: [orderId], references: [id])
+  variant ProductVariant @relation(fields: [productVariantId], references: [id])
+  review  Review?
+
+  @@map("order_items")
+  @@schema("sales")
+}
+
+//////////////////////////////////////////////////////
+// PAYMENT SCHEMA
+//////////////////////////////////////////////////////
+
+model Payment {
+  id      Int           @id @default(autoincrement())
+  orderId Int           @unique
+  userId  Int
+  method  String
+  amount  Decimal
+  status  PaymentStatus
+  paidAt  DateTime?
+
+  order   Order @relation(fields: [orderId], references: [id])
+  user    User  @relation(fields: [userId], references: [id])
+  refunds Refund[]
+
+  @@map("payments")
+  @@schema("payment")
+}
+
+model Refund {
   id        Int      @id @default(autoincrement())
+  paymentId Int
   orderId   Int
-  order     Order    @relation(fields: [orderId], references: [id])
-  productId Int
-  product   Product  @relation(fields: [productId], references: [id])
-  quantity  Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  amount    Decimal
+  status    String?
+  processedAt DateTime?
 
-  @@map("order_products")
+  payment Payment @relation(fields: [paymentId], references: [id])
+  order   Order   @relation(fields: [orderId], references: [id])
+
+  @@map("refunds")
+  @@schema("payment")
 }
 
-model OrderEvent {
-  id        Int              @id @default(autoincrement())
-  orderId   Int
-  order     Order            @relation(fields: [orderId], references: [id])
-  status    OrderEventStatus @default(PENDING)
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+//////////////////////////////////////////////////////
+// LOGISTICS SCHEMA
+//////////////////////////////////////////////////////
 
-  @@map("order_events")
+model Shipment {
+  id             Int            @id @default(autoincrement())
+  orderId        Int            @unique
+  shippingFee    Decimal
+  status         ShipmentStatus
+  trackingNumber String?
+  shippedAt      DateTime?
+
+  order  Order @relation(fields: [orderId], references: [id])
+  events ShipmentEvent[]
+
+  @@map("shipments")
+  @@schema("logistics")
+}
+
+model ShipmentEvent {
+  id         Int      @id @default(autoincrement())
+  shipmentId Int
+  status     String
+  location   String?
+  occurredAt DateTime @default(now())
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id])
+
+  @@map("shipment_events")
+  @@schema("logistics")
+}
+
+//////////////////////////////////////////////////////
+// WALLET SCHEMA
+//////////////////////////////////////////////////////
+
+model Wallet {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique
+  balance     Decimal  @default(0)
+  lastUpdated DateTime @updatedAt
+
+  user         User        @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+
+  @@map("wallets")
+  @@schema("wallet")
+}
+
+model Transaction {
+  id        Int      @id @default(autoincrement())
+  walletId  Int
+  type      String
+  amount    Decimal
+  status    String?
+  createdAt DateTime @default(now())
+
+  wallet Wallet @relation(fields: [walletId], references: [id])
+
+  @@map("transactions")
+  @@schema("wallet")
+}
+
+//////////////////////////////////////////////////////
+// REVIEW SCHEMA
+//////////////////////////////////////////////////////
+
+model Review {
+  id          Int      @id @default(autoincrement())
+  productId   Int
+  orderItemId Int      @unique
+  userId      Int
+  rating      Int
+  comment     String?
+  createdAt   DateTime @default(now())
+
+  product   Product   @relation(fields: [productId], references: [id])
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@map("reviews")
+  @@schema("review")
 }
