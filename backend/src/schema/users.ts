@@ -1,45 +1,36 @@
-// src/schema/users.ts
-
 import { z } from 'zod'
 
 export const SignUpSchema = z.object({
-  name: z.string(),
   email: z.string().email(),
   password: z.string().min(6),
 })
 
-export const UpdateUserSchema = z.object({
-  name: z.string().optional(),
-  defaultShippingAddress: z.number().optional(),
-  defaultBillingAddress: z.number().optional(),
+export const LoginSchema = z.object({
+  email: z.string().email(),
+  password: z.string(),
 })
 
-export const ProfileSchema = z.object({
-  firstName: z.string(),
-  middleName: z.string().nullable().optional(),
-  lastName: z.string(),
-  birthDate: z.string(),
-  age: z.number(),
-  profilePicture: z.string().nullable().optional(),
+export const CreateProfileSchema = z.object({
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
+  phone: z.string().optional(),
+  avatarUrl: z.string().url().optional(),
+  birthday: z.string().optional(),
 })
 
-export const AddressSchema = z.object({
-  lineOne: z.string(),
-  lineTwo: z.string().optional(),
-  city: z.string(),
-  country: z.string(),
-  pincode: z.string(),
-})
+export const UpdateProfileSchema = CreateProfileSchema.partial()
 
-export const ProfileInputSchema = z.object({
-  firstName: z.string(),
-  middleName: z.string().optional(),
-  lastName: z.string(),
-  birthDate: z.string(),
-  age: z.string(),
-  profilePicture: z.string().optional(),
+export const CreateAddressSchema = z.object({
+  fullName: z.string().min(1),
+  street: z.string().min(1),
+  city: z.string().min(1),
+  state: z.string().optional(),
+  postalCode: z.string().min(1),
+  country: z.string().min(1),
+  phone: z.string().optional(),
+  isDefault: z.boolean().optional().default(false),
 })
 
 export const UpdateRoleSchema = z.object({
-  role: z.enum(['ADMIN', 'USER']),
+  role: z.enum(['ADMIN', 'USER', 'SELLER']),
 })

@@ -1,12 +1,11 @@
-// src/schema/cart.ts
-
 import { z } from 'zod'
 
-export const CreateCartSchema = z.object({
-    productId: z.number(),
-    quantity: z.number(),
+export const AddCartItemSchema = z.object({
+  productVariantId: z.number().int().positive(),
+  quantity: z.number().int().min(1),
+  price: z.number().positive(),
 })
 
-export const ChnageQuantitySchema = z.object({
-    quantity: z.number(),
+export const UpdateCartItemSchema = z.object({
+  quantity: z.number().int().min(1),
 })

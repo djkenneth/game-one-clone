@@ -12,6 +12,11 @@ import { cartRouter } from './routes/cart'
 import { orderRouter } from './routes/orders'
 import { productRouter } from './routes/products'
 import { userRouter } from './routes/users'
+import { paymentRouter } from './routes/payment'
+import { walletRouter } from './routes/wallet'
+import { reviewRouter } from './routes/review'
+import { sellerRouter } from './routes/seller'
+import { catalogRouter } from './routes/catalog'
 
 // Initialize Prisma
 export const prisma = new PrismaClient()
@@ -127,9 +132,14 @@ app.get('/swagger.json', (c) => {
 const api = new Hono()
 api.route('/auth', authRouter)
 api.route('/products', productRouter)
+api.route('/catalog', catalogRouter)
 api.route('/cart', cartRouter)
 api.route('/orders', orderRouter)
 api.route('/users', userRouter)
+api.route('/payment', paymentRouter)
+api.route('/wallet', walletRouter)
+api.route('/reviews', reviewRouter)
+api.route('/sellers', sellerRouter)
 
 app.route('/api', api)
 

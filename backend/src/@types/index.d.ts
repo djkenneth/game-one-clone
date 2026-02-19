@@ -1,14 +1,11 @@
-// Ambient declarations for packages not yet resolvable with the current installed version.
-// These are superseded by the real package types once `bun install` is run.
+// Global ambient declarations
 
-declare module 'prisma/config' {
-  interface PrismaMigrateConfig {
-    url: string
+declare namespace NodeJS {
+  interface ProcessEnv {
+    DATABASE_URL: string
+    PORT?: string
+    JWT_SECRET: string
+    JWT_REFRESH_SECRET: string
+    FRONTEND_URL?: string
   }
-
-  interface PrismaConfig {
-    migrate?: PrismaMigrateConfig
-  }
-
-  export function defineConfig(config: PrismaConfig): PrismaConfig
 }

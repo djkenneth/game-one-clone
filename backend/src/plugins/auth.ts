@@ -20,7 +20,7 @@ export const authMiddleware = createMiddleware<AuthEnv>(async (c, next) => {
   }
 
   try {
-    const payload = await verify(bearer, process.env.JWT_SECRET!)
+    const payload = await verify(bearer, process.env.JWT_SECRET!, 'HS256')
 
     if (!payload?.userId) {
       throw new UnauthorizedError('Invalid token')

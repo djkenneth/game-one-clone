@@ -4,8 +4,8 @@
   "module": "src/index.ts",
   "type": "module",
   "scripts": {
-    "dev": "bun run --watch src/index.ts",
-    "start": "bun run src/index.ts",
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
     "studio": "prisma studio",
     "migration:create": "prisma migrate dev --create-only",
     "migrate": "prisma migrate dev",
@@ -13,12 +13,12 @@
     "reset:seed": "prisma migrate reset",
     "reset": "prisma migrate reset --skip-seed",
     "lint": "eslint . --ext .ts",
-    "lint:fix": "pnpm lint --fix",
-    "format": "prettier --write '**/*.ts{,x}'",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "format": "prettier --write \"**/*.{ts,tsx}\"",
     "check:types": "tsc --noEmit",
     "check:spell": "git diff --name-only | cspell --no-summary --no-progress --no-must-find-files --file-list stdin",
-    "check:all": "concurrently \"pnpm lint\" \"pnpm check:types\" \"pnpm check:spell\"",
-    "pre-commit": "concurrently \"lint-staged --allow-empty\" \"pnpm check:types\" \"pnpm check:spell\""
+    "check:all": "concurrently \"bun run lint\" \"bun run check:types\" \"bun run check:spell\"",
+    "pre-commit": "concurrently \"lint-staged --allow-empty\" \"bun run check:types\" \"bun run check:spell\""
   },
   "lint-staged": {
     "**/*.{ts,tsx}": [
@@ -52,8 +52,10 @@
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "bun-types": "latest",
+    "concurrently": "^9.0.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
+    "lint-staged": "^15.0.0",
     "prettier": "^3.4.0",
     "typescript": "^5.7.0"
   }
