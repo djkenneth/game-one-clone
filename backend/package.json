@@ -18,7 +18,8 @@
     "check:types": "tsc --noEmit",
     "check:spell": "git diff --name-only | cspell --no-summary --no-progress --no-must-find-files --file-list stdin",
     "check:all": "concurrently \"bun run lint\" \"bun run check:types\" \"bun run check:spell\"",
-    "pre-commit": "concurrently \"lint-staged --allow-empty\" \"bun run check:types\" \"bun run check:spell\""
+    "pre-commit": "concurrently \"lint-staged --allow-empty\" \"bun run check:types\" \"bun run check:spell\"",
+    "seed": "bun prisma/seed.ts"
   },
   "lint-staged": {
     "**/*.{ts,tsx}": [
@@ -27,7 +28,7 @@
     ]
   },
   "prisma": {
-    "seed": "bun prisma/seed.ts"
+    "seed": "bun run seed"
   },
   "keywords": [],
   "author": "",

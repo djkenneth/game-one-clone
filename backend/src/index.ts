@@ -4,6 +4,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { swaggerUI } from '@hono/swagger-ui'
 import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
 import { AppError } from './utils/errors'
 
 // Import routes
@@ -18,8 +19,9 @@ import { reviewRouter } from './routes/review'
 import { sellerRouter } from './routes/seller'
 import { catalogRouter } from './routes/catalog'
 
-// Initialize Prisma
-export const prisma = new PrismaClient()
+// Initialize Prisma with pg adapter (required in Prisma 7)
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
+export const prisma = new PrismaClient({ adapter })
 
 // Create Hono app
 const app = new Hono()
