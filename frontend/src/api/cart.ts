@@ -1,25 +1,26 @@
-import { AddCartItemData, ChangeQuantityCartItemdata } from '@/types/cart';
 import axiosInstance from './axiosInstance';
 
+export const getCart = async () => {
+  const response = await axiosInstance.get('/api/cart');
+  return response.data;
+};
 
-export const addToCartItem = async (data: AddCartItemData) => {
-    const response = await axiosInstance.post('/api/cart', data);
-    return response;
-}
+export const addCartItem = async (productVariantId: number, quantity: number) => {
+  const response = await axiosInstance.post('/api/cart', { productVariantId, quantity });
+  return response.data;
+};
 
-export const deleteCartItem = async (cartId: string) => {
-    const response = await axiosInstance.delete(`/api/cart/${cartId}`);
-    return response;
-}
+export const updateCartItem = async (id: number, quantity: number) => {
+  const response = await axiosInstance.put(`/api/cart/${id}`, { quantity });
+  return response.data;
+};
 
-export const changeQuantityCartItem = async ({ cartId, quantity }: ChangeQuantityCartItemdata) => {
-    const response = await axiosInstance.put(`/api/cart/${cartId}`, {
-        quantity
-    })
-    return response
-}
+export const removeCartItem = async (id: number) => {
+  const response = await axiosInstance.delete(`/api/cart/${id}`);
+  return response.data;
+};
 
-export const getAllCartItem = async () => {
-    const response = await axiosInstance.get('/api/cart');
-    return response;
-} 
+export const clearCart = async () => {
+  const response = await axiosInstance.delete('/api/cart/clear');
+  return response.data;
+};

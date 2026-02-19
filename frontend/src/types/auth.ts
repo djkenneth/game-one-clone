@@ -1,39 +1,26 @@
-export type User = {
-  userId: number;
-  exp: number;
-  iat: number;
+import type { Address, Profile } from '.';
+
+export type UserRole = 'ADMIN' | 'USER' | 'SELLER';
+
+export type UserData = {
+  id: number;
+  email: string;
+  role: UserRole;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  profile?: Profile | null;
+  addresses?: Address[];
 };
 
 export interface AuthResponse {
+  user: { id: number; email: string; role: UserRole };
   accessToken: string;
-  refreshToken: string;
-}
-
-export interface ErrorResponse {
-  response: {
-    message: string;
-    errorCode: number;
-  };
 }
 
 export interface SignupData {
   email: string;
   password: string;
-  name: string;
-}
-
-export interface SignupResponse {
-  user: {
-    id: number;
-    name: string;
-    email: string;
-    password: string;
-    role: string;
-    defaultShippingAddress: null;
-    defaultBillingAddress: null;
-    createdAt: string;
-    updatedAt: string;
-  };
 }
 
 export interface LoginData {

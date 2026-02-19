@@ -9,20 +9,14 @@ import { Link } from 'react-router-dom';
 interface SignupFormInputs {
   email: string;
   password: string;
-  name: string;
 }
 
 const Signup = () => {
   const { register, handleSubmit } = useForm<SignupFormInputs>();
   const { signup } = useAuth();
 
-  const onSubmit = async ({ email, password, name }: SignupFormInputs) => {
-    try {
-      await signup({ email, password, name });
-      // Redirect to dashboard or handle success
-    } catch (error) {
-      console.error('Signup failed', error);
-    }
+  const onSubmit = async ({ email, password }: SignupFormInputs) => {
+    await signup({ email, password });
   };
 
   return (
@@ -35,38 +29,21 @@ const Signup = () => {
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">Name</Label>
-              <Input {...register('name')} placeholder="Max Robinson" required />
-            </div>
-            <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
-              <Input
-                // id="email"
-                // type="email"
-                {...register('email')}
-                placeholder="m@example.com"
-                required
-              />
+              <Input {...register('email')} type="email" placeholder="m@example.com" required />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                // id="password"
-                {...register('password')}
-                type="password"
-              />
+              <Input {...register('password')} type="password" placeholder="Min. 8 characters" required />
             </div>
-            <Button type="submit" className="w-full">
+            <Button type="submit" variant="solidred" className="w-full">
               Create an account
             </Button>
-            {/* <Button variant="outline" className="w-full">
-                        Sign up with GitHub
-                    </Button> */}
           </div>
         </form>
         <div className="mt-4 text-center text-sm">
           Already have an account?{' '}
-          <Link to="/customer/account/login" className="underline">
+          <Link to="/customer/account/login" className="underline hover:text-red-600">
             Sign in
           </Link>
         </div>
@@ -76,9 +53,3 @@ const Signup = () => {
 };
 
 export default Signup;
-
-// export function LoginForm() {
-//     return (
-
-//     )
-// }

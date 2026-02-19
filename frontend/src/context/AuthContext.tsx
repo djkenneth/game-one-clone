@@ -1,146 +1,109 @@
-import { getUser, login as loginApi, signup as signupApi, logout as logoutApi } from '../api/auth';
-import { addToCartItem } from '../api/cart';
-import { useToast } from '@/hooks/use-toast';
-import { SignupData, LoginData } from '@/types/auth';
-import { AddCartItemData } from '@/types/cart';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getMe, login as loginApi, logout as logoutApi, signup as signupApi } from '@/api/auth';
+import { useToast } from '@/hooks/use-toast';
+import type { LoginData, SignupData, UserData } from '@/types/auth';
 
-// Define the shape of our context state
 interface AuthContextType {
-  openLoginModal: boolean,
+  user: UserData | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  openLoginModal: boolean;
   setOpenLoginModal: (open: boolean) => void;
-  user: { name: string } | null;
-  accessToken: string | null;
   login: (data: LoginData) => Promise<void>;
   signup: (data: SignupData) => Promise<void>;
   logout: () => void;
-  isAuthenticated: boolean;
-  handleAddtoCart: ({ productId, quantity }: AddCartItemData) => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
-// Create context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// AuthProvider Component
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [openLoginModal, setOpenLoginModal] = useState<boolean>(false)
-  const [user, setUser] = useState(null);
-  const [accessToken, setAccessToken] = useState<string | null>(localStorage.getItem('accessToken'));
+  const [user, setUser] = useState<UserData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [openLoginModal, setOpenLoginModal] = useState(false);
 
-  // Check if the user is authenticated
   const isAuthenticated = !!user;
 
-  // Login function
-  const login = async (data: LoginData) => {
-    const res = await loginApi(data);
+  const refreshUser = async () => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      setUser(null);
+      setIsLoading(false);
+      return;
+    }
+    try {
+      const res = await getMe();
+      setUser(res.data.user);
+    } catch {
+      setUser(null);
+      localStorage.removeItem('accessToken');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    if (res?.status === 404 || res.status === 400) {
+  useEffect(() => {
+    refreshUser();
+  }, []);
+
+  const login = async (data: LoginData) => {
+    try {
+      const res = await loginApi(data);
+      if (res.status === 200) {
+        localStorage.setItem('accessToken', res.data.data.accessToken);
+        setUser({ ...res.data.data.user, isActive: true, createdAt: '', updatedAt: '' });
+        await refreshUser();
+        navigate('/', { replace: true });
+      }
+    } catch (error: any) {
       toast({
         variant: 'destructive',
-        description: res?.response?.data.message as string
+        description: error?.response?.data?.error?.message ?? 'Login failed',
       });
     }
-
-    if (res?.status === 200) {
-      localStorage.setItem('accessToken', res.data.accessToken);
-      localStorage.setItem('refreshToken', res.data.refreshToken);
-      setAccessToken(res.data.accessToken);
-      const user = await getUser();
-      setUser(user);
-      navigate('/', { replace: true });
-    }
   };
 
-  // Signup function
   const signup = async (data: SignupData) => {
-    const res = await signupApi(data);
-
-    if (res.status === 400) {
-      if (res.response.data.errorCode === 2001) {
-        toast({
-          variant: 'destructive',
-          description: res.response.data.errors.issues[0].message as string
-        });
+    try {
+      const res = await signupApi(data);
+      if (res.status === 201) {
+        toast({ description: 'Account created! Please log in.' });
+        navigate('/customer/account/login', { replace: true });
       }
-
-      if (res.response.data.errorCode === 1002) {
-        toast({
-          variant: 'destructive',
-          description: res.response.data.message as string
-        });
-      }
-    }
-
-    if (res.status === 200) {
-      navigate('/customer/account/login', { replace: true });
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        description: error?.response?.data?.error?.message ?? 'Signup failed',
+      });
     }
   };
 
-  const handleAddtoCart = async ({ productId, quantity }: AddCartItemData) => {
-    if (isAuthenticated) {
-      await addToCartItem({ productId, quantity })
-    } else {
-      setOpenLoginModal(true)
-    }
-  }
-
-  // Logout function
   const logout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    setUser(null);
-    setAccessToken(null);
     logoutApi();
+    setUser(null);
     navigate('/customer/account/login', { replace: true });
   };
 
-  // Fetch the user if the access token exists
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (accessToken) {
-        try {
-          const userData = await getUser();
-          setUser(userData);
-        } catch (error) {
-          console.log(error);
-          logout(); // If error occurs, logout
-        }
-      }
-    };
-    fetchUser();
-  }, [accessToken]);
-
   const value = {
     user,
-    accessToken,
     isAuthenticated,
+    isLoading,
     openLoginModal,
-
-    // set state
     setOpenLoginModal,
-
-    // function
     login,
     signup,
     logout,
-    handleAddtoCart
-  }
+    refreshUser,
+  };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// Custom hook to use the AuthContext
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };

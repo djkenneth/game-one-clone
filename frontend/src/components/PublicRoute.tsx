@@ -1,20 +1,14 @@
 import { useAuth } from '@/context/AuthContext';
-import { useEffect } from 'react';
-import { RouteProps, useNavigate } from 'react-router-dom';
+import { PropsWithChildren } from 'react';
+import { Navigate } from 'react-router-dom';
 
-type PublicRouteProps = RouteProps & {
-  redirectPath?: string;
-};
+type PublicRouteProps = PropsWithChildren<{ redirectPath?: string }>;
 
 export default function PublicRoute({ children, redirectPath = '/' }: PublicRouteProps) {
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const { isAuthenticated, isLoading } = useAuth();
 
-  useEffect(() => {
-    if (user !== null) {
-      navigate(redirectPath, { replace: true });
-    }
-  }, [navigate, user]);
+  if (isLoading) return null;
+  if (isAuthenticated) return <Navigate to={redirectPath} replace />;
 
   return children;
 }

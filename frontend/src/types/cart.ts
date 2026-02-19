@@ -1,9 +1,8 @@
 export interface AddCartItemData {
-    productId: number;
-    quantity: number;
+  productVariantId: number;
+  quantity: number;
 }
 
-export interface ChangeQuantityCartItemdata {
-    cartId: string;
-    quantity: number;
+export interface UpdateCartItemData {
+  quantity: number;
 }
