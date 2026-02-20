@@ -1,6 +1,7 @@
 import CategoryBoxes from '@/components/Sections/CategoryBoxes';
 import FeaturedProduct from '@/components/Sections/Featured/FeaturedProduct';
 import { FirstGrid, SecondGrid } from '@/components/Sections/Grid';
+import TrustBadges from '@/components/Sections/TrustBadges';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
 
@@ -41,6 +42,7 @@ const Home = () => {
         <CarouselPrevious className="absolute left-6 top-1/2" />
         <CarouselNext className="absolute right-6 top-1/2" />
       </Carousel>
+      <TrustBadges />
       <FeaturedProduct />
       <CategoryBoxes />
       <FirstGrid />
