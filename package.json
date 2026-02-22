@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "concurrently --kill-others-on-fail --delay 2000 -n \"backend,frontend\" -c \"blue,green\" \"cd backend && bun run dev\" \"cd frontend && bun run dev\"",
-    "studio": "cd backend && bun run studio"
+    "studio": "cd backend && bun run studio",
+    "admin": "cd admin && bun run dev"
   },
   "devDependencies": {
     "concurrently": "^9.0.0"
