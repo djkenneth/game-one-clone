@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCart } from '@/context/CartContext';
 import { formatNumberToCurrency } from '@/lib/utils';
 import type { Product } from '@/types';
@@ -10,56 +9,65 @@ function PrimaryCard({ id, name, variants, brand }: Product) {
   const { addToCart } = useCart();
   const firstVariant = variants?.[0];
   const price = firstVariant ? Number(firstVariant.price) : 0;
+  const inStock = firstVariant ? firstVariant.stock > 0 : false;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (firstVariant) {
-      addToCart(firstVariant.id, 1);
-    }
+    if (firstVariant) addToCart(firstVariant.id, 1);
   };
 
   return (
-    <Link to={`/product/${id}`}>
-      <Card className="group shadow-inner hover:shadow-lg h-full flex flex-col">
-        <div className="overflow-hidden bg-gray-50 flex items-center justify-center aspect-square">
-          <div className="text-gray-300 text-6xl flex items-center justify-center w-full h-full">
+    <Link to={`/product/${id}`} className="group block">
+      <div className="flex h-full flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-red-100">
+
+        {/* Image area */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 aspect-square">
+          <div className="flex h-full w-full items-center justify-center text-5xl text-gray-200 transition-transform duration-500 group-hover:scale-110">
             🛍️
           </div>
+
+          {/* Brand badge */}
+          {brand && (
+            <span className="absolute left-2 top-2 rounded-md bg-dark-90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+              {brand.name}
+            </span>
+          )}
+
+          {/* Stock badge */}
+          {!inStock && firstVariant && (
+            <span className="absolute right-2 top-2 rounded-md bg-gray-700/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
+              Sold Out
+            </span>
+          )}
+
+          {/* Add to cart overlay — slides up on hover */}
+          {inStock && firstVariant && (
+            <div className="absolute inset-x-0 bottom-0 translate-y-full transition-transform duration-300 group-hover:translate-y-0">
+              <button
+                onClick={handleAddToCart}
+                className="flex w-full items-center justify-center gap-2 bg-red-600 py-2.5 text-xs font-semibold uppercase tracking-wider text-white hover:bg-red-700 active:bg-red-800"
+              >
+                <HiOutlineShoppingBag className="h-4 w-4" />
+                Add to Cart
+              </button>
+            </div>
+          )}
         </div>
-        <CardHeader className="p-2 pt-2 flex-1">
-          <CardTitle className="line-clamp-2 text-sm">{name}</CardTitle>
-          {brand && <p className="text-xs text-gray-500">{brand.name}</p>}
-        </CardHeader>
-        <CardContent className="flex flex-col gap-2 p-2 pt-0">
-          {firstVariant && (
-            <p className="text-center font-semibold text-red-600">{formatNumberToCurrency(price)}</p>
-          )}
-          {firstVariant && firstVariant.stock > 0 ? (
-            <>
-              <Button
-                onClick={handleAddToCart}
-                variant="secondary"
-                size="sm"
-                className="inline-flex group-hover:hidden"
-              >
-                <HiOutlineShoppingBag className="mr-1 h-4 w-4" /> Add to Cart
-              </Button>
-              <Button
-                onClick={handleAddToCart}
-                variant="destructive"
-                size="sm"
-                className="hidden group-hover:inline-flex"
-              >
-                <HiOutlineShoppingBag className="mr-1 h-4 w-4" /> Add to Cart
-              </Button>
-            </>
+
+        {/* Info */}
+        <div className="flex flex-1 flex-col gap-1 p-3">
+          <p className="line-clamp-2 text-sm font-medium leading-snug text-gray-800">
+            {name}
+          </p>
+          {firstVariant ? (
+            <p className="mt-auto pt-2 text-base font-bold text-red-600">
+              {formatNumberToCurrency(price)}
+            </p>
           ) : (
-            <Button variant="outline" size="sm" disabled>
-              Out of Stock
-            </Button>
+            <p className="mt-auto pt-2 text-xs text-gray-400">No variants</p>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </Link>
   );
 }

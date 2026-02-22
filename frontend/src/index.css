@@ -128,4 +128,17 @@
   p {
     @apply font-open-sans;
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  a,
+  button {
+    @apply transition-colors duration-150;
+  }
+
+  img {
+    @apply select-none;
+  }
 }
