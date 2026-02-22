@@ -13,14 +13,55 @@ export type Brand = {
   logoUrl?: string | null;
 };
 
+export type ProductImage = {
+  id: number;
+  productId: number;
+  variantId?: number | null;
+  url: string;
+  altText?: string | null;
+  position: number;
+};
+
+export type ProductOptionValue = {
+  id: number;
+  optionId: number;
+  value: string;
+  position: number;
+};
+
+export type ProductOption = {
+  id: number;
+  productId: number;
+  name: string;
+  position: number;
+  values: ProductOptionValue[];
+};
+
+export type ProductTag = {
+  id: number;
+  productId: number;
+  tag: string;
+};
+
 export type ProductVariant = {
   id: number;
   productId: number;
   sku: string;
+  title?: string | null;
   price: string | number;
+  compareAtPrice?: string | number | null;
+  costPrice?: string | number | null;
   stock: number;
   weight?: string | number | null;
+  barcode?: string | null;
+  position: number;
+  taxable: boolean;
+  inventoryPolicy: string;
+  option1?: string | null;
+  option2?: string | null;
+  option3?: string | null;
   isActive: boolean;
+  images?: ProductImage[];
 };
 
 export type Product = {
@@ -29,14 +70,21 @@ export type Product = {
   categoryId: number;
   brandId?: number | null;
   name: string;
+  handle?: string | null;
   description?: string | null;
+  bodyHtml?: string | null;
+  productType?: string | null;
   status?: string | null;
+  publishedAt?: string | null;
   createdAt: string;
   updatedAt: string;
   category: Category;
   brand?: Brand | null;
   shop: { id: number; name: string };
   variants?: ProductVariant[];
+  images?: ProductImage[];
+  options?: ProductOption[];
+  tags?: ProductTag[];
 };
 
 export type CartItem = {

@@ -1,4 +1,5 @@
 import { CardGridCol } from './CardGridCol';
+import { getBrands, getCategories } from '@/api/catalog';
 import { Button } from '@/components/ui/button';
 import Container from '@/components/ui/container';
 import { Input } from '@/components/ui/input';
@@ -11,30 +12,63 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { useProducts } from '@/context/ProductsContext';
+import type { Brand, Category } from '@/types';
 import { useEffect, useState } from 'react';
 import { FaSearch } from 'react-icons/fa';
 import { HiOutlineAdjustmentsHorizontal } from 'react-icons/hi2';
 import { useSearchParams } from 'react-router-dom';
 
+const selectClass =
+  'w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2';
+
 const Products = () => {
   const { onFetchProducts, page, setPage, totalPages, isLoading, products } = useProducts();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchInput, setSearchInput] = useState(searchParams.get('search') ?? '');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>(
+    searchParams.get('categoryId') ? Number(searchParams.get('categoryId')) : undefined,
+  );
+  const [selectedBrandId, setSelectedBrandId] = useState<number | undefined>(
+    searchParams.get('brandId') ? Number(searchParams.get('brandId')) : undefined,
+  );
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
+
+  // Load categories and brands once on mount
+  useEffect(() => {
+    getCategories().then((res) => setCategories(res.data.categories)).catch(() => {});
+    getBrands().then((res) => setBrands(res.data.brands)).catch(() => {});
+  }, []);
 
   const applyFilters = (currentPage = page) => {
     const params: Record<string, string> = {};
     if (searchInput) params.search = searchInput;
+    if (selectedCategoryId) params.categoryId = String(selectedCategoryId);
+    if (selectedBrandId) params.brandId = String(selectedBrandId);
     if (currentPage > 1) params.page = String(currentPage);
     setSearchParams(params);
-    onFetchProducts({ search: searchInput || undefined, page: currentPage });
+    onFetchProducts({
+      search: searchInput || undefined,
+      categoryId: selectedCategoryId,
+      brandId: selectedBrandId,
+      page: currentPage,
+    });
   };
 
   useEffect(() => {
     const searchFromUrl = searchParams.get('search') ?? undefined;
+    const categoryFromUrl = searchParams.get('categoryId')
+      ? Number(searchParams.get('categoryId'))
+      : undefined;
+    const brandFromUrl = searchParams.get('brandId')
+      ? Number(searchParams.get('brandId'))
+      : undefined;
     setSearchInput(searchFromUrl ?? '');
-    onFetchProducts({ search: searchFromUrl, page: 1 });
+    setSelectedCategoryId(categoryFromUrl);
+    setSelectedBrandId(brandFromUrl);
+    onFetchProducts({ search: searchFromUrl, categoryId: categoryFromUrl, brandId: brandFromUrl, page: 1 });
     setPage(1);
-  }, [searchParams.get('search')]);
+  }, [searchParams.get('search'), searchParams.get('categoryId'), searchParams.get('brandId')]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,11 +76,22 @@ const Products = () => {
     applyFilters(1);
   };
 
+  const clearFilters = () => {
+    setSearchInput('');
+    setSelectedCategoryId(undefined);
+    setSelectedBrandId(undefined);
+    setPage(1);
+    setSearchParams({});
+    onFetchProducts({ page: 1 });
+  };
+
   const goToPage = (p: number) => {
     setPage(p);
     applyFilters(p);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const hasActiveFilters = searchInput || selectedCategoryId || selectedBrandId;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -73,10 +118,9 @@ const Products = () => {
               </div>
 
               <form onSubmit={handleSearch} className="space-y-4 p-4">
+                {/* Search */}
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-gray-500">
-                    Search
-                  </label>
+                  <label className="mb-1.5 block text-xs font-medium text-gray-500">Search</label>
                   <div className="relative">
                     <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400" />
                     <Input
@@ -87,18 +131,55 @@ const Products = () => {
                     />
                   </div>
                 </div>
+
+                {/* Category */}
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-gray-500">
+                    Category
+                  </label>
+                  <select
+                    className={selectClass}
+                    value={selectedCategoryId ?? ''}
+                    onChange={(e) =>
+                      setSelectedCategoryId(e.target.value ? Number(e.target.value) : undefined)
+                    }
+                  >
+                    <option value="">All categories</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Brand */}
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-gray-500">Brand</label>
+                  <select
+                    className={selectClass}
+                    value={selectedBrandId ?? ''}
+                    onChange={(e) =>
+                      setSelectedBrandId(e.target.value ? Number(e.target.value) : undefined)
+                    }
+                  >
+                    <option value="">All brands</option>
+                    {brands.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <Button type="submit" variant="solidred" className="w-full" disabled={isLoading}>
                   Apply Filters
                 </Button>
-                {searchInput && (
+
+                {hasActiveFilters && (
                   <button
                     type="button"
-                    onClick={() => {
-                      setSearchInput('');
-                      setPage(1);
-                      setSearchParams({});
-                      onFetchProducts({ page: 1 });
-                    }}
+                    onClick={clearFilters}
                     className="w-full text-xs text-gray-400 hover:text-red-600"
                   >
                     Clear filters
@@ -133,7 +214,9 @@ const Products = () => {
             {totalPages > 1 && (
               <Pagination>
                 <PaginationContent>
-                  <PaginationItem className={page <= 1 ? 'pointer-events-none opacity-40' : 'cursor-pointer'}>
+                  <PaginationItem
+                    className={page <= 1 ? 'pointer-events-none opacity-40' : 'cursor-pointer'}
+                  >
                     <PaginationPrevious onClick={() => goToPage(page - 1)} />
                   </PaginationItem>
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
@@ -141,13 +224,19 @@ const Products = () => {
                       <PaginationLink
                         isActive={p === page}
                         onClick={() => goToPage(p)}
-                        className={p === page ? 'bg-red-600 text-white hover:bg-red-700 border-red-600' : ''}
+                        className={
+                          p === page ? 'bg-red-600 text-white hover:bg-red-700 border-red-600' : ''
+                        }
                       >
                         {p}
                       </PaginationLink>
                     </PaginationItem>
                   ))}
-                  <PaginationItem className={page >= totalPages ? 'pointer-events-none opacity-40' : 'cursor-pointer'}>
+                  <PaginationItem
+                    className={
+                      page >= totalPages ? 'pointer-events-none opacity-40' : 'cursor-pointer'
+                    }
+                  >
                     <PaginationNext onClick={() => goToPage(page + 1)} />
                   </PaginationItem>
                 </PaginationContent>

@@ -72,6 +72,56 @@ export const ProductController = {
     return c.json({ success: true, message: 'Variant deleted' })
   },
 
+  // --- Images ---
+  async addProductImage(c: C) {
+    const productId = parseInt(c.req.param('productId'))
+    const body = c.req.valid('json' as never) as any
+    const image = await ProductService.addProductImage(productId, body)
+    return c.json({ success: true, data: { image } }, 201)
+  },
+
+  async deleteProductImage(c: C) {
+    const id = parseInt(c.req.param('id'))
+    await ProductService.deleteProductImage(id)
+    return c.json({ success: true, message: 'Image deleted' })
+  },
+
+  // --- Options ---
+  async createProductOption(c: C) {
+    const productId = parseInt(c.req.param('productId'))
+    const body = c.req.valid('json' as never) as any
+    const option = await ProductService.createProductOption(productId, body)
+    return c.json({ success: true, data: { option } }, 201)
+  },
+
+  async updateProductOption(c: C) {
+    const id = parseInt(c.req.param('id'))
+    const body = c.req.valid('json' as never) as any
+    const option = await ProductService.updateProductOption(id, body)
+    return c.json({ success: true, data: { option } })
+  },
+
+  async deleteProductOption(c: C) {
+    const id = parseInt(c.req.param('id'))
+    await ProductService.deleteProductOption(id)
+    return c.json({ success: true, message: 'Option deleted' })
+  },
+
+  // --- Tags ---
+  async addProductTag(c: C) {
+    const productId = parseInt(c.req.param('productId'))
+    const body = c.req.valid('json' as never) as any
+    const tag = await ProductService.addProductTag(productId, body.tag)
+    return c.json({ success: true, data: { tag } }, 201)
+  },
+
+  async removeProductTag(c: C) {
+    const productId = parseInt(c.req.param('productId'))
+    const tag = c.req.param('tag')
+    await ProductService.removeProductTag(productId, tag)
+    return c.json({ success: true, message: 'Tag removed' })
+  },
+
   // --- Categories ---
   async listCategories(c: C) {
     const categories = await ProductService.listCategories()

@@ -3,8 +3,12 @@ import { NotFoundError } from '../utils/errors'
 
 type ProductData = {
   name: string
+  handle?: string
   description?: string
+  bodyHtml?: string
+  productType?: string
   status?: string
+  publishedAt?: string
   shopId: number
   categoryId: number
   brandId?: number
@@ -12,10 +16,35 @@ type ProductData = {
 
 type VariantData = {
   sku: string
+  title?: string
   price: number
+  compareAtPrice?: number
+  costPrice?: number
   stock: number
   weight?: number
+  barcode?: string
+  position?: number
+  taxable?: boolean
+  inventoryPolicy?: string
+  option1?: string
+  option2?: string
+  option3?: string
   isActive?: boolean
+}
+
+type ImageData = {
+  url: string
+  altText?: string
+  position?: number
+  width?: number
+  height?: number
+  variantId?: number
+}
+
+type OptionData = {
+  name: string
+  position?: number
+  values: string[]
 }
 
 type ListOptions = {
@@ -49,6 +78,8 @@ export const ProductService = {
           category: true,
           brand: true,
           shop: { select: { id: true, name: true } },
+          images: { orderBy: { position: 'asc' }, take: 1 },
+          tags: true,
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -64,7 +95,17 @@ export const ProductService = {
         category: true,
         brand: true,
         shop: { select: { id: true, name: true } },
-        variants: { where: { isActive: true } },
+        variants: {
+          where: { isActive: true },
+          orderBy: { position: 'asc' },
+          include: { images: { orderBy: { position: 'asc' } } },
+        },
+        images: { orderBy: { position: 'asc' } },
+        options: {
+          orderBy: { position: 'asc' },
+          include: { values: { orderBy: { position: 'asc' } } },
+        },
+        tags: true,
       },
     })
     if (!product) throw new NotFoundError('Product not found')
@@ -74,7 +115,13 @@ export const ProductService = {
   async createProduct(data: ProductData) {
     return prisma.product.create({
       data,
-      include: { category: true, brand: true },
+      include: {
+        category: true,
+        brand: true,
+        images: true,
+        options: { include: { values: true } },
+        tags: true,
+      },
     })
   },
 
@@ -84,7 +131,13 @@ export const ProductService = {
     return prisma.product.update({
       where: { id },
       data,
-      include: { category: true, brand: true },
+      include: {
+        category: true,
+        brand: true,
+        images: true,
+        options: { include: { values: true } },
+        tags: true,
+      },
     })
   },
 
@@ -96,23 +149,95 @@ export const ProductService = {
 
   // --- Variants ---
   async listVariants(productId: number) {
-    return prisma.productVariant.findMany({ where: { productId } })
+    return prisma.productVariant.findMany({
+      where: { productId },
+      orderBy: { position: 'asc' },
+      include: { images: { orderBy: { position: 'asc' } } },
+    })
   },
 
   async createVariant(productId: number, data: VariantData) {
-    return prisma.productVariant.create({ data: { ...data, productId } })
+    return prisma.productVariant.create({
+      data: { ...data, productId },
+      include: { images: true },
+    })
   },
 
   async updateVariant(id: number, data: Partial<VariantData>) {
     const variant = await prisma.productVariant.findUnique({ where: { id } })
     if (!variant) throw new NotFoundError('Variant not found')
-    return prisma.productVariant.update({ where: { id }, data })
+    return prisma.productVariant.update({
+      where: { id },
+      data,
+      include: { images: true },
+    })
   },
 
   async deleteVariant(id: number) {
     const variant = await prisma.productVariant.findUnique({ where: { id } })
     if (!variant) throw new NotFoundError('Variant not found')
     await prisma.productVariant.delete({ where: { id } })
+  },
+
+  // --- Images ---
+  async addProductImage(productId: number, data: ImageData) {
+    const product = await prisma.product.findUnique({ where: { id: productId } })
+    if (!product) throw new NotFoundError('Product not found')
+    return prisma.productImage.create({ data: { ...data, productId } })
+  },
+
+  async deleteProductImage(id: number) {
+    const image = await prisma.productImage.findUnique({ where: { id } })
+    if (!image) throw new NotFoundError('Image not found')
+    await prisma.productImage.delete({ where: { id } })
+  },
+
+  // --- Options ---
+  async createProductOption(productId: number, data: OptionData) {
+    const product = await prisma.product.findUnique({ where: { id: productId } })
+    if (!product) throw new NotFoundError('Product not found')
+    return prisma.productOption.create({
+      data: {
+        productId,
+        name: data.name,
+        position: data.position ?? 0,
+        values: {
+          create: data.values.map((value, i) => ({ value, position: i })),
+        },
+      },
+      include: { values: { orderBy: { position: 'asc' } } },
+    })
+  },
+
+  async updateProductOption(id: number, data: { name?: string; position?: number }) {
+    const option = await prisma.productOption.findUnique({ where: { id } })
+    if (!option) throw new NotFoundError('Option not found')
+    return prisma.productOption.update({
+      where: { id },
+      data,
+      include: { values: { orderBy: { position: 'asc' } } },
+    })
+  },
+
+  async deleteProductOption(id: number) {
+    const option = await prisma.productOption.findUnique({ where: { id } })
+    if (!option) throw new NotFoundError('Option not found')
+    await prisma.productOption.delete({ where: { id } })
+  },
+
+  // --- Tags ---
+  async addProductTag(productId: number, tag: string) {
+    const product = await prisma.product.findUnique({ where: { id: productId } })
+    if (!product) throw new NotFoundError('Product not found')
+    return prisma.productTag.upsert({
+      where: { productId_tag: { productId, tag } },
+      update: {},
+      create: { productId, tag },
+    })
+  },
+
+  async removeProductTag(productId: number, tag: string) {
+    await prisma.productTag.deleteMany({ where: { productId, tag } })
   },
 
   // --- Categories ---

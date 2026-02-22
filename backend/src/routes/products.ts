@@ -8,6 +8,10 @@ import {
   UpdateProductSchema,
   CreateVariantSchema,
   UpdateVariantSchema,
+  CreateProductImageSchema,
+  CreateProductOptionSchema,
+  UpdateProductOptionSchema,
+  AddProductTagSchema,
 } from '../schema/products'
 
 export const productRouter = new Hono<AuthEnv>()
@@ -75,4 +79,63 @@ productRouter.delete(
   authMiddleware,
   isAdminMiddleware,
   ProductController.deleteVariant
+)
+
+// ─── Admin Image Routes ───────────────────────────────────────────────────────
+
+productRouter.post(
+  '/:productId/images',
+  authMiddleware,
+  isAdminMiddleware,
+  zValidator('json', CreateProductImageSchema),
+  ProductController.addProductImage
+)
+
+productRouter.delete(
+  '/images/:id',
+  authMiddleware,
+  isAdminMiddleware,
+  ProductController.deleteProductImage
+)
+
+// ─── Admin Option Routes ──────────────────────────────────────────────────────
+
+productRouter.post(
+  '/:productId/options',
+  authMiddleware,
+  isAdminMiddleware,
+  zValidator('json', CreateProductOptionSchema),
+  ProductController.createProductOption
+)
+
+productRouter.put(
+  '/options/:id',
+  authMiddleware,
+  isAdminMiddleware,
+  zValidator('json', UpdateProductOptionSchema),
+  ProductController.updateProductOption
+)
+
+productRouter.delete(
+  '/options/:id',
+  authMiddleware,
+  isAdminMiddleware,
+  ProductController.deleteProductOption
+)
+
+// ─── Admin Tag Routes ─────────────────────────────────────────────────────────
+
+productRouter.post(
+  '/:productId/tags',
+  authMiddleware,
+  isAdminMiddleware,
+  zValidator('json', AddProductTagSchema),
+  ProductController.addProductTag
+)
+
+productRouter.delete(
+  '/:productId/tags/:tag',
+  authMiddleware,
+  isAdminMiddleware,
+  ProductController.removeProductTag
 )
