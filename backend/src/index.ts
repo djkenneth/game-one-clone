@@ -18,6 +18,8 @@ import { walletRouter } from './routes/wallet'
 import { reviewRouter } from './routes/review'
 import { sellerRouter } from './routes/seller'
 import { catalogRouter } from './routes/catalog'
+// Admin routes
+import { adminRouter } from './routes/admin'
 
 // Initialize Prisma with pg adapter (required in Prisma 7)
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
@@ -27,12 +29,17 @@ export const prisma = new PrismaClient({ adapter })
 const app = new Hono()
 
 // CORS
+const allowedOrigins = [
+  process.env.FRONTEND_URL || 'http://localhost:5173',
+  process.env.ADMIN_URL || 'http://localhost:5174',
+]
+
 app.use(
   '*',
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: (origin) => (allowedOrigins.includes(origin) ? origin : allowedOrigins[0]),
     credentials: true,
-  })
+  }),
 )
 
 // Global error handler
@@ -142,6 +149,9 @@ api.route('/payment', paymentRouter)
 api.route('/wallet', walletRouter)
 api.route('/reviews', reviewRouter)
 api.route('/sellers', sellerRouter)
+
+// Admin routes — all protected by authMiddleware + isAdminMiddleware
+api.route('/admin', adminRouter)
 
 app.route('/api', api)
 

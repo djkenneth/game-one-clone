@@ -68,4 +68,10 @@ export const ReviewService = {
     if (review.userId !== userId) throw new BadRequestError('You can only delete your own reviews')
     await prisma.review.delete({ where: { id } })
   },
+
+  async adminDeleteReview(id: number) {
+    const review = await prisma.review.findUnique({ where: { id } })
+    if (!review) throw new NotFoundError('Review not found')
+    await prisma.review.delete({ where: { id } })
+  },
 }
